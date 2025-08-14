@@ -1,0 +1,53 @@
+"use client"
+
+import Link from "next/link"
+import { useAuth } from "@/contexts/auth-context"
+import { Button } from "@/components/ui/button"
+import { User, LogOut } from "lucide-react"
+
+export function Navbar() {
+  const { user, isAuthenticated, logout } = useAuth()
+
+  return (
+    <nav className="bg-white shadow-sm border-b">
+      <div className="container mx-auto px-4">
+        <div className="flex items-center justify-between h-16">
+          <Link href="/" className="flex items-center space-x-2">
+            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+              <span className="text-white font-bold text-sm">SH</span>
+            </div>
+            <span className="text-xl font-bold text-gray-900">ServiceHub</span>
+          </Link>
+
+          <div className="flex items-center space-x-4">
+            {isAuthenticated && user ? (
+              <>
+                <Link href="/dashboard">
+                  <Button variant="ghost" size="sm">
+                    <User className="w-4 h-4 mr-2" />
+                    Dashboard
+                  </Button>
+                </Link>
+                <Button variant="ghost" size="sm" onClick={logout}>
+                  <LogOut className="w-4 h-4 mr-2" />
+                  Logout
+                </Button>
+              </>
+            ) : (
+              <>
+                <Link href="/login">
+                  <Button variant="ghost" size="sm">
+                    Login
+                  </Button>
+                </Link>
+                <Link href="/login">
+                  <Button size="sm">Get Started</Button>
+                </Link>
+              </>
+            )}
+          </div>
+        </div>
+      </div>
+    </nav>
+  )
+}

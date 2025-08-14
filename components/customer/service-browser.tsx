@@ -196,7 +196,7 @@ export function ServiceBrowser({ onBookService }: ServiceBrowserProps) {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                <SelectTrigger>
+                <SelectTrigger className="w-full">
                   <SelectValue placeholder="All Categories" />
                 </SelectTrigger>
                 <SelectContent>
@@ -212,7 +212,7 @@ export function ServiceBrowser({ onBookService }: ServiceBrowserProps) {
 
             <div>
               <Select value={priceRange} onValueChange={setPriceRange}>
-                <SelectTrigger>
+                <SelectTrigger className="w-full">
                   <SelectValue placeholder="Price Range" />
                 </SelectTrigger>
                 <SelectContent>
@@ -226,7 +226,7 @@ export function ServiceBrowser({ onBookService }: ServiceBrowserProps) {
 
             <div>
               <Select value={sortBy} onValueChange={setSortBy}>
-                <SelectTrigger>
+                <SelectTrigger className="w-full">
                   <SelectValue placeholder="Sort By" />
                 </SelectTrigger>
                 <SelectContent>
@@ -297,7 +297,7 @@ function ServiceBrowseCard({ service, onViewDetails, onBook }: ServiceBrowseCard
   const category = serviceCategories.find((cat) => cat.id === service.category)
 
   return (
-    <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={onViewDetails}>
+    <Card className="py-0 pb-6 hover:shadow-lg transition-shadow cursor-pointer" onClick={onViewDetails}>
       <div className="aspect-video bg-gray-100 rounded-t-lg overflow-hidden">
         <img
           src={service.images[0] || "/placeholder.svg?height=200&width=300&query=service placeholder"}
