@@ -3,6 +3,8 @@
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { useAuth } from "@/contexts/auth-context"
+import Link from "next/link"
+import { MessageCircle } from "lucide-react"
 
 export function DashboardHeader() {
   const { user, logout } = useAuth()
@@ -21,6 +23,12 @@ export function DashboardHeader() {
           </div>
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-2">
+              <Link href="/chat">
+                <Button variant="ghost" size="sm">
+                  <MessageCircle className="w-4 h-4 mr-2" />
+                  Chat
+                </Button>
+              </Link>
               <Avatar className="h-8 w-8">
                 <AvatarFallback>
                   {user.name

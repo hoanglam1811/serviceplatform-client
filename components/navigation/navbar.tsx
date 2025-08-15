@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { useAuth } from "@/contexts/auth-context"
 import { Button } from "@/components/ui/button"
-import { User, LogOut } from "lucide-react"
+import { User, LogOut, MessageCircle } from "lucide-react"
 
 export function Navbar() {
   const { user, isAuthenticated, logout } = useAuth()
@@ -28,6 +28,7 @@ export function Navbar() {
                     Dashboard
                   </Button>
                 </Link>
+                
                 <Button variant="ghost" size="sm" onClick={logout}>
                   <LogOut className="w-4 h-4 mr-2" />
                   Logout
