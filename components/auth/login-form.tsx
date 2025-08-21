@@ -34,9 +34,8 @@ export function LoginForm({ onToggleMode }: LoginFormProps) {
 
   return (
     <Card className="w-full max-w-md">
-      <CardHeader className="space-y-1">
-        <CardTitle className="text-2xl font-bold">Welcome back</CardTitle>
-        <CardDescription>Sign in to your account to continue</CardDescription>
+      <CardHeader className="flex justify-center space-y-1">
+        <img src={"/businessman.gif"} />
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
