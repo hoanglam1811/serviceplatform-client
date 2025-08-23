@@ -1,25 +1,5 @@
+import { CreateBookingDTO, UpdateBookingDTO } from "@/types/booking";
 import api from "./api";
-
-// DTO types (adjust based on your backend)
-export interface CreateBookingDTO {
-  userId: string;
-  serviceId: string;
-}
-
-export interface UpdateBookingDTO {
-  id: string;
-  serviceId: string;
-  status: string;
-}
-
-export interface BookingDTO {
-  id: string;
-  userId: string;
-  serviceId: string;
-  status: string;
-  createdAt: string;
-  updatedAt: string;
-}
 
 // CREATE
 export const createBooking = async (dto: CreateBookingDTO) => {

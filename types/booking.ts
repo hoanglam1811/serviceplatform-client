@@ -28,3 +28,25 @@ export interface BookingRequest {
   requirements?: string
   notes?: string
 }
+
+export interface CreateBookingDTO {
+  userId: string;
+  serviceId: string;
+}
+
+export interface UpdateBookingDTO {
+  id: string;
+  serviceId: string;
+  status: string;
+}
+
+export interface BookingDTO {
+  id: string;
+  userId: string;
+  serviceId: string;
+  status: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+

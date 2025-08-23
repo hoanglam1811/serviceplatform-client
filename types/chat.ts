@@ -21,3 +21,18 @@ export interface ChatUser {
   avatar?: string
   isOnline: boolean
 }
+
+export interface CreateChatDTO {
+  userId: string;
+  serviceId: string;
+  senderId: string;
+	receiverId: string;
+  message: string;
+  status: string;
+}
+
+export interface UpdateChatDTO {
+  id: string;
+	message: string;
+	status: string;
+}

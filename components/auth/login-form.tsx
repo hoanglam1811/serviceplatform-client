@@ -24,6 +24,8 @@ export function LoginForm({ onToggleMode }: LoginFormProps) {
     e.preventDefault()
     setIsLoading(true)
     setError("")
+    console.log(process.env.BE_API_URL);
+    
 
     const success = await login(email, password)
     if (!success) {
@@ -43,7 +45,7 @@ export function LoginForm({ onToggleMode }: LoginFormProps) {
             <Label htmlFor="email">Email</Label>
             <Input
               id="email"
-              type="email"
+              type="text"
               placeholder="Enter your email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}

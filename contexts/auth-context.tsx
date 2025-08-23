@@ -3,6 +3,7 @@
 import type React from "react"
 import { createContext, useContext, useState, useEffect } from "react"
 import type { User, AuthState } from "@/types/user"
+import { loginCustomer, logoutAPI } from "@/services/authService"
 
 interface AuthContextType extends AuthState {
   login: (email: string, password: string) => Promise<boolean>
@@ -53,16 +54,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   const login = async (email: string, password: string): Promise<boolean> => {
-    // Mock authentication logic
-    const user = mockUsers.find((u) => u.email === email)
-    if (user && password === "password") {
-      localStorage.setItem("user", JSON.stringify(user))
-      setAuthState({
-        user,
-        isLoading: false,
-        isAuthenticated: true,
-      })
-      return true
+    try{
+      const res = await loginCustomer(email, password)
+
+      if(res.data){
+        localStorage.setItem("user", JSON.stringify(res.data))
+        setAuthState({
+          user: res.data,
+          isLoading: false,
+          isAuthenticated: true,
+        })
+        return true
+      }
+    }
+    catch(err){
+      return false;
+    }
+    finally{
+
     }
     return false
   }
@@ -92,7 +101,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return true
   }
 
-  const logout = () => {
+  const logout = async () => {
+    try {
+      await logoutAPI()
+    } catch (err) {
+      console.error("Logout failed", err)
+    }
     localStorage.removeItem("user")
     setAuthState({
       user: null,
