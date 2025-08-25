@@ -37,7 +37,7 @@ export default function DashboardPage() {
       <DashboardHeader />
       <main className="container mx-auto px-4 py-8">
         <div className="max-w-7xl mx-auto">
-          {user.role === "provider" ? <ProviderDashboard /> : <CustomerDashboard />}
+          {user.role === "Provider" ? <ProviderDashboard /> : <CustomerDashboard />}
         </div>
       </main>
     </div>

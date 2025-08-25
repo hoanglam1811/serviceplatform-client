@@ -2,7 +2,7 @@ export interface User {
   id: string
   email: string
   name: string
-  role: "provider" | "customer"
+  role: "Provider" | "Customer"
   avatar?: string
   createdAt: Date
 }
@@ -11,4 +11,15 @@ export interface AuthState {
   user: User | null
   isLoading: boolean
   isAuthenticated: boolean
+}
+
+export interface RegisterDTO {
+  username: string
+  password: string
+  fullName: string
+  email: string
+  phoneNumber: string
+  nationalId?: File
+  status: string
+  role: string
 }

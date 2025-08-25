@@ -18,7 +18,7 @@ export function DashboardHeader() {
           <div className="flex items-center space-x-4">
             <h1 className="text-2xl font-bold text-gray-900">ServiceHub</h1>
             <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">
-              {user.role === "provider" ? "Service Provider" : "Customer"}
+              {user.role === "Provider" ? "Service Provider" : "Customer"}
             </span>
           </div>
           <div className="flex items-center space-x-4">

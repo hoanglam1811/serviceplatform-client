@@ -20,7 +20,7 @@ export function SignupForm({ onToggleMode }: SignupFormProps) {
     email: "",
     password: "",
     confirmPassword: "",
-    role: "customer" as "provider" | "customer",
+    role: "Customer" as "Provider" | "Customer",
   })
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
@@ -44,6 +44,8 @@ export function SignupForm({ onToggleMode }: SignupFormProps) {
     }
 
     const success = await signup(formData.email, formData.password, formData.name, formData.role)
+    console.log(success);
+    
     if (!success) {
       setError("Failed to create account")
     }
@@ -106,14 +108,14 @@ export function SignupForm({ onToggleMode }: SignupFormProps) {
             <Label>I want to:</Label>
             <RadioGroup
               value={formData.role}
-              onValueChange={(value) => setFormData({ ...formData, role: value as "provider" | "customer" })}
+              onValueChange={(value) => setFormData({ ...formData, role: value as "Provider" | "Customer" })}
             >
               <div className="flex items-center space-x-2">
-                <RadioGroupItem value="customer" id="customer" />
+                <RadioGroupItem value="Customer" id="customer" />
                 <Label htmlFor="customer">Find and book services</Label>
               </div>
               <div className="flex items-center space-x-2">
-                <RadioGroupItem value="provider" id="provider" />
+                <RadioGroupItem value="Provider" id="provider" />
                 <Label htmlFor="provider">Offer my services</Label>
               </div>
             </RadioGroup>

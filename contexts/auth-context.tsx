@@ -2,12 +2,12 @@
 
 import type React from "react"
 import { createContext, useContext, useState, useEffect } from "react"
-import type { User, AuthState } from "@/types/user"
-import { loginCustomer, logoutAPI } from "@/services/authService"
+import type { User, AuthState, RegisterDTO } from "@/types/user"
+import { loginCustomer, logoutAPI, registerCustomer } from "@/services/authService"
 
 interface AuthContextType extends AuthState {
   login: (email: string, password: string) => Promise<boolean>
-  signup: (email: string, password: string, name: string, role: "provider" | "customer") => Promise<boolean>
+  signup: (email: string, password: string, name: string, role: "Provider" | "Customer") => Promise<boolean>
   logout: () => void
 }
 
@@ -19,14 +19,14 @@ const mockUsers: User[] = [
     id: "1",
     email: "provider@example.com",
     name: "John Provider",
-    role: "provider",
+    role: "Provider",
     createdAt: new Date(),
   },
   {
     id: "2",
     email: "customer@example.com",
     name: "Jane Customer",
-    role: "customer",
+    role: "Customer",
     createdAt: new Date(),
   },
 ]
@@ -79,25 +79,37 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signup = async (
     email: string,
     password: string,
-    name: string,
-    role: "provider" | "customer",
+    username: string,
+    role: "Provider" | "Customer",
   ): Promise<boolean> => {
     // Mock signup logic
-    const newUser: User = {
-      id: Date.now().toString(),
-      email,
-      name,
-      role,
-      createdAt: new Date(),
+    try{
+      const newUser: RegisterDTO = {
+        email,
+        username,
+        fullName: username,
+        password,
+        status: "Active",
+        phoneNumber: "0000000000",
+        nationalId: new File([""], "empty.txt", { type: "text/plain" }),
+        role,
+      }
+      const res = await registerCustomer(newUser);
+      
+      localStorage.setItem("user", JSON.stringify(res.data))
+      setAuthState({
+        user: res.data,
+        isLoading: false,
+        isAuthenticated: true,
+      })
     }
+    catch(err){
+      console.log(err);
+      return false
+    }
+    finally{
 
-    mockUsers.push(newUser)
-    localStorage.setItem("user", JSON.stringify(newUser))
-    setAuthState({
-      user: newUser,
-      isLoading: false,
-      isAuthenticated: true,
-    })
+    }
     return true
   }
 

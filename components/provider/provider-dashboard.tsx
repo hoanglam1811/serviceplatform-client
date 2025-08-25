@@ -211,7 +211,7 @@ export function ProviderDashboard() {
                   <h4 className="font-medium mb-2">Profile Information</h4>
                   <p className="text-sm text-gray-600">Name: {user?.name}</p>
                   <p className="text-sm text-gray-600">Email: {user?.email}</p>
-                  <p className="text-sm text-gray-600">Member since: {user?.createdAt.toLocaleDateString()}</p>
+                  <p className="text-sm text-gray-600">Member since: {user?.createdAt?.toLocaleDateString()}</p>
                 </div>
                 <div className="text-center py-8 text-gray-500">
                   <p>Profile editing features coming soon!</p>
