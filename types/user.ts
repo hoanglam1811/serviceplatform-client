@@ -19,7 +19,8 @@ export interface RegisterDTO {
   fullName: string
   email: string
   phoneNumber: string
-  nationalId?: File
+  gender: string
+  nationalId?: File[]
   status: string
   role: string
 }
