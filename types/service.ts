@@ -29,3 +29,32 @@ export const serviceCategories: ServiceCategory[] = [
   { id: "music", name: "Music & Audio", icon: "🎵" },
   { id: "fitness", name: "Health & Fitness", icon: "💪" },
 ]
+
+export interface CreateServiceDTO {
+  userId: string;
+  categoryId: string;
+  name: string;
+  description: string;
+  type: string;
+  duration: number;
+  serviceArea: string;
+  originalPrice: number;
+  discountPrice: number;
+  status: string;
+  imageUrl: string;
+}
+
+export interface UpdateServiceDTO {
+  id: string;
+  userId: string;
+  categoryId: string;
+  name: string;
+  description: string;
+  type: string;
+  duration: number;
+  serviceArea: string;
+  originalPrice: number;
+  discountPrice: number;
+  status: string;
+  imageUrl: string;
+}

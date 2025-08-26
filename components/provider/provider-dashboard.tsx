@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -10,6 +10,7 @@ import { ServiceCard } from "./service-card"
 import { BookingManagement } from "../booking/booking-management"
 import type { Service } from "@/types/service"
 import { useAuth } from "@/contexts/auth-context"
+import { getAllServicesByUserId } from "@/services/serviceService"
 
 // Mock services data
 const mockServices: Service[] = [
@@ -48,6 +49,19 @@ export function ProviderDashboard() {
   const [services, setServices] = useState<Service[]>(mockServices)
   const [showServiceForm, setShowServiceForm] = useState(false)
   const [editingService, setEditingService] = useState<Service | null>(null)
+
+  const fetchServices = async () => {
+    try{
+      const res = await getAllServicesByUserId(user?.id || "")
+      console.log(res);
+    }
+    catch(err){
+      console.log(err)
+    }
+    finally{
+
+    }
+  }
 
   const handleSaveService = (serviceData: Partial<Service>) => {
     if (editingService) {
@@ -104,6 +118,10 @@ export function ProviderDashboard() {
       />
     )
   }
+
+  useEffect(() => {
+    fetchServices()
+  }, [])
 
   return (
     <div className="space-y-6">
