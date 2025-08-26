@@ -7,7 +7,15 @@ import { loginCustomer, logoutAPI, registerCustomer } from "@/services/authServi
 
 interface AuthContextType extends AuthState {
   login: (email: string, password: string) => Promise<boolean>
-  signup: (email: string, password: string, name: string, role: "Provider" | "Customer") => Promise<boolean>
+  signup: (
+    email: string,
+    password: string,
+    fullName: string,
+    username: string,
+    phoneNumber: string,
+    nationalId: File[],
+    gender: string,
+    role: "Provider" | "Customer") => Promise<boolean>
   logout: () => void
 }
 
@@ -54,10 +62,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   const login = async (email: string, password: string): Promise<boolean> => {
-    try{
+    try {
       const res = await loginCustomer(email, password)
 
-      if(res.data){
+      if (res.data) {
         localStorage.setItem("user", JSON.stringify(res.data))
         setAuthState({
           user: res.data,
@@ -67,10 +75,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return true
       }
     }
-    catch(err){
+    catch (err) {
       return false;
     }
-    finally{
+    finally {
 
     }
     return false
@@ -79,23 +87,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signup = async (
     email: string,
     password: string,
+    fullName: string,
     username: string,
+    phoneNumber: string,
+    nationalId: File[],
+    gender: string,
     role: "Provider" | "Customer",
   ): Promise<boolean> => {
-    // Mock signup logic
-    try{
+    try {
       const newUser: RegisterDTO = {
         email,
         username,
-        fullName: username,
+        fullName,
         password,
-        status: "Active",
-        phoneNumber: "0000000000",
-        nationalId: new File([""], "empty.txt", { type: "text/plain" }),
+        status: "Pending",
+        phoneNumber,
+        gender,
+        nationalId,
         role,
       }
       const res = await registerCustomer(newUser);
-      
+
       localStorage.setItem("user", JSON.stringify(res.data))
       setAuthState({
         user: res.data,
@@ -103,11 +115,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         isAuthenticated: true,
       })
     }
-    catch(err){
+    catch (err) {
       console.log(err);
       return false
     }
-    finally{
+    finally {
 
     }
     return true
