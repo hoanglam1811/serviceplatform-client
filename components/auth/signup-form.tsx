@@ -10,12 +10,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { useAuth } from "@/contexts/auth-context"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select"
+import { useToast } from "../ui/use-toast"
 
 interface SignupFormProps {
   onToggleMode: () => void
 }
 
 export function SignupForm({ onToggleMode }: SignupFormProps) {
+  const { toast } = useToast()
   const [formData, setFormData] = useState({
     fullName: "",
     username: "",
@@ -78,11 +80,20 @@ export function SignupForm({ onToggleMode }: SignupFormProps) {
       formData.gender,
       formData.role
     )
-
     console.log(success);
-
-    if (!success) {
-      setError("Failed to create account")
+    if (success) {
+      toast({
+        title: "🎉 Thành công!",
+        description: "Vui lòng đợi admin duyệt tài khoản của bạn.",
+        duration: 3000,
+      })
+    } else {
+      toast({
+        title: "❌ Thất bại",
+        description: "Tạo tài khoản không thành công, vui lòng thử lại.",
+        duration: 3000,
+        variant: "destructive",
+      })
     }
     setIsLoading(false)
   }
@@ -229,7 +240,7 @@ export function SignupForm({ onToggleMode }: SignupFormProps) {
                   const files = Array.from(e.target.files || []);
                   if (files.length > 2) {
                     alert("Chỉ được chọn tối đa 2 ảnh (mặt trước và mặt sau)");
-                    if (fileInputRef.current) fileInputRef.current.value = ""; // reset input
+                    if (fileInputRef.current) fileInputRef.current.value = "";
                     return;
                   }
                   setFormData({ ...formData, nationalId: files });
