@@ -3,14 +3,13 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "@/components/ui/use-toast";
-import { getAllCustomers, getAllServiceProviders, rejectUser } from "@/services/authService";
-import api from "@/services/api";
+import { acceptUser, getAllCustomers, getAllServiceProviders, rejectUser } from "@/services/authService";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Textarea } from "@/components/ui/textarea";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 type UserItem = {
     id: string;
@@ -41,6 +40,18 @@ export default function AdminDashboard() {
     const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
     const [rejectReason, setRejectReason] = useState("");
     const [selectedUser, setSelectedUser] = useState<{ id: string; role: "Customer" | "Provider" } | null>(null);
+    const [isApproveModalOpen, setIsApproveModalOpen] = useState(false);
+    const currentList = activeTab === "customers" ? customers : providers;
+
+    const [currentPage, setCurrentPage] = useState(1);
+    const usersPerPage = 5;
+
+    const indexOfLastUser = currentPage * usersPerPage;
+    const indexOfFirstUser = indexOfLastUser - usersPerPage;
+    const currentUsers = currentList.slice(indexOfFirstUser, indexOfLastUser);
+
+    const totalPages = Math.ceil(currentList.length / usersPerPage);
+
 
     useEffect(() => {
         const load = async () => {
@@ -97,9 +108,8 @@ export default function AdminDashboard() {
     const updateUserStatus = async (id: string, role: "Customer" | "Provider") => {
         try {
             setProcessingId(id);
-            const resp = await api.put(`/Authentication/accept-user/${id}?role=${role}`);
+            const resp = await acceptUser(id, role);
 
-            // update local state
             setCustomers((prev) =>
                 prev.map((p) => (p.id === id ? { ...p, status: "Verified" } : p))
             );
@@ -126,12 +136,30 @@ export default function AdminDashboard() {
         }
     };
 
-    const handleApprove = async (id: string, role: "Customer" | "Provider") => {
-        if (!confirm("Approve this account?")) return;
-        await updateUserStatus(id, role);
+    const handleOpenApprove = (user: any) => {
+        setSelectedUser(user);
+        setIsApproveModalOpen(true);
     };
 
-    // reject (mở dialog)
+    const approveUser = async (id: string, role: "Customer" | "Provider") => {
+        await updateUserStatus(id, role);
+        setCustomers((prev) =>
+            prev.map((p) =>
+                p.id === id ? { ...p, status: "Verified" } : p
+            )
+        );
+        setProviders((prev) =>
+            prev.map((p) =>
+                p.id === id ? { ...p, status: "Verified" } : p
+            )
+        );
+        toast({
+            title: "Approved",
+            description: "User has been approved successfully.",
+        });
+        setIsApproveModalOpen(false);
+    };
+
     const handleReject = (id: string, role: "Customer" | "Provider") => {
         setSelectedUser({ id, role });
         setRejectReason("");
@@ -264,7 +292,7 @@ export default function AdminDashboard() {
                                         </td>
                                     </tr>
                                 ) : (
-                                    filteredList.map((u) => (
+                                    currentUsers.map((u) => (
                                         <tr key={u.id} className="hover:bg-muted/50">
                                             <td className="px-4 py-3">
                                                 <div className="flex items-center gap-3">
@@ -323,40 +351,51 @@ export default function AdminDashboard() {
                                             </td>
                                             <td className="px-4 py-3 text-right">
                                                 <div className="flex items-center justify-end gap-2">
-                                                    <Button
-                                                        size="sm"
-                                                        onClick={() =>
-                                                            handleApprove(
-                                                                u.id,
-                                                                u.role as
-                                                                | "Customer"
-                                                                | "Provider"
-                                                            )
-                                                        }
-                                                        disabled={
-                                                            processingId === u.id
-                                                        }
-                                                    >
-                                                        Approve
-                                                    </Button>
+                                                    <TooltipProvider>
+                                                        <Tooltip>
+                                                            <TooltipTrigger asChild>
+                                                                <Button
+                                                                    variant="default"
+                                                                    size="sm"
+                                                                    onClick={() => handleOpenApprove(u)}
+                                                                >
+                                                                    Approve
+                                                                </Button>
+                                                            </TooltipTrigger>
+                                                            <TooltipContent>
+                                                                <p>Chấp nhận tài khoản này</p>
+                                                            </TooltipContent>
+                                                        </Tooltip>
+                                                    </TooltipProvider>
 
-                                                    <Button
-                                                        variant="destructive"
-                                                        size="sm"
-                                                        onClick={() =>
-                                                            handleReject(
-                                                                u.id,
-                                                                u.role as
-                                                                | "Customer"
-                                                                | "Provider"
-                                                            )
-                                                        }
-                                                        disabled={
-                                                            processingId === u.id
-                                                        }
-                                                    >
-                                                        Reject
-                                                    </Button>
+
+                                                    <TooltipProvider>
+                                                        <Tooltip>
+                                                            <TooltipTrigger asChild>
+                                                                <Button
+                                                                    variant="destructive"
+                                                                    size="sm"
+                                                                    onClick={() =>
+                                                                        handleReject(
+                                                                            u.id,
+                                                                            u.role as
+                                                                            | "Customer"
+                                                                            | "Provider"
+                                                                        )
+                                                                    }
+                                                                    disabled={
+                                                                        processingId === u.id
+                                                                    }
+
+                                                                >
+                                                                    Reject
+                                                                </Button>
+                                                            </TooltipTrigger>
+                                                            <TooltipContent>
+                                                                <p>Từ chối tài khoản này</p>
+                                                            </TooltipContent>
+                                                        </Tooltip>
+                                                    </TooltipProvider>
                                                 </div>
                                             </td>
                                         </tr>
@@ -364,6 +403,53 @@ export default function AdminDashboard() {
                                 )}
                             </tbody>
                         </table>
+                        <div className="flex justify-center items-center gap-2 mt-4">
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                disabled={currentPage === 1}
+                                onClick={() => setCurrentPage((prev) => prev - 1)}
+                            >
+                                Prev
+                            </Button>
+                            <span className="text-sm">
+                                Page {currentPage} / {totalPages || 1}
+                            </span>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                disabled={currentPage === totalPages || totalPages === 0}
+                                onClick={() => setCurrentPage((prev) => prev + 1)}
+                            >
+                                Next
+                            </Button>
+                        </div>
+
+
+                        <Dialog open={isApproveModalOpen} onOpenChange={setIsApproveModalOpen}>
+                            <DialogContent>
+                                <DialogHeader>
+                                    <DialogTitle>Approve User</DialogTitle>
+                                    <DialogDescription>
+                                        Bạn có chắc chắn muốn approve user này không?
+                                    </DialogDescription>
+                                </DialogHeader>
+
+                                <DialogFooter>
+                                    <Button variant="ghost" onClick={() => setIsApproveModalOpen(false)}>
+                                        Cancel
+                                    </Button>
+                                    <Button
+                                        onClick={async () => {
+                                            if (!selectedUser) return;
+                                            await approveUser(selectedUser.id, selectedUser.role);
+                                        }}
+                                    >
+                                        Confirm Approve
+                                    </Button>
+                                </DialogFooter>
+                            </DialogContent>
+                        </Dialog>
 
                         {/* Reject Modal */}
                         <Dialog
