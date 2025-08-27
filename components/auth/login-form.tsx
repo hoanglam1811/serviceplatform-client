@@ -74,11 +74,6 @@ export function LoginForm({ onToggleMode }: LoginFormProps) {
             Sign up
           </button>
         </div>
-        <div className="mt-4 p-3 bg-gray-50 rounded-md text-xs text-gray-600">
-          <p className="font-medium mb-1">Demo accounts:</p>
-          <p>Provider: provider@example.com / password</p>
-          <p>Customer: customer@example.com / password</p>
-        </div>
       </CardContent>
     </Card>
   )
