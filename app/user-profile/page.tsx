@@ -1,12 +1,12 @@
 "use client";
 import { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
 import { getUserById, updateUser } from "@/services/userService";
 import { useToast } from "@/hooks/use-toast";
 import UserProfileForm from "./UserProfileForm";
+import { useAuth } from "@/contexts/auth-context";
 
 export default function UserProfile() {
-    const user = useSelector((state: RootState) => state.token.user);
+    const { user } = useAuth();
     const [userData, setUserData] = useState<any>(null);
     const { toast } = useToast()
 
@@ -18,7 +18,8 @@ export default function UserProfile() {
 
     const handleUpdate = async (updatedData: any) => {
         try {
-            await updateUser(user.id, updatedData);
+            if (!user?.id) return;
+            await updateUser(user?.id, updatedData);
             toast({
                 title: "Thành công",
                 description: "Cập nhật thông tin thành công!",
