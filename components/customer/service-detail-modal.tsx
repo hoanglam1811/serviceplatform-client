@@ -4,11 +4,11 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Star, Clock, User, Calendar } from "lucide-react"
-import type { Service } from "@/types/service"
+import type { Service, ServiceDTO } from "@/types/service"
 import { serviceCategories } from "@/types/service"
 
 interface ServiceDetailModalProps {
-  service: Service
+  service: ServiceDTO
   onClose: () => void
   onBook: () => void
 }

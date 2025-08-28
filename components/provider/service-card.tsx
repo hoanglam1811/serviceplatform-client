@@ -4,8 +4,9 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Edit, Trash2, Eye, EyeOff } from "lucide-react"
-import type { Service } from "@/types/service"
-import { serviceCategories } from "@/types/service"
+import type { Service, ServiceCategory } from "@/types/service"
+import { useEffect, useState } from "react"
+import { getAllCategories } from "@/services/serviceCategoryService"
 
 interface ServiceCardProps {
   service: Service
@@ -15,26 +16,26 @@ interface ServiceCardProps {
 }
 
 export function ServiceCard({ service, onEdit, onDelete, onToggleActive }: ServiceCardProps) {
-  const category = serviceCategories.find((cat) => cat.id === service.category)
+  
 
   return (
-    <Card className={`${!service.isActive ? "opacity-60" : ""}`}>
+    <Card className={`${service.status.toLowerCase() != "active" ? "opacity-60" : ""}`}>
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
           <div className="flex-1">
-            <CardTitle className="text-lg">{service.title}</CardTitle>
+            <CardTitle className="text-lg">{service.name}</CardTitle>
             <div className="flex items-center gap-2 mt-1">
               <Badge variant="outline">
-                {category?.icon} {category?.name}
+                {service.category?.icon} {service.category?.name} 
               </Badge>
-              <Badge variant={service.isActive ? "default" : "secondary"}>
-                {service.isActive ? "Active" : "Inactive"}
+              <Badge variant={service.status == "active" ? "default" : "secondary"}>
+                {service.status}
               </Badge>
             </div>
           </div>
           <div className="flex gap-1">
             <Button size="sm" variant="ghost" onClick={() => onToggleActive(service.id)}>
-              {service.isActive ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              {service.status == "active" ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
             </Button>
             <Button size="sm" variant="ghost" onClick={() => onEdit(service)}>
               <Edit className="h-4 w-4" />
@@ -48,10 +49,10 @@ export function ServiceCard({ service, onEdit, onDelete, onToggleActive }: Servi
       <CardContent>
         <p className="text-sm text-gray-600 mb-3 line-clamp-2">{service.description}</p>
         <div className="flex items-center justify-between text-sm">
-          <span className="font-semibold text-green-600">${service.price}</span>
+          <span className="font-semibold text-green-600">${service.discountPrice}</span>
           <span className="text-gray-500">{service.duration}</span>
         </div>
-        {service.tags.length > 0 && (
+        {service?.tags?.length > 0 && (
           <div className="flex flex-wrap gap-1 mt-3">
             {service.tags.slice(0, 3).map((tag) => (
               <Badge key={tag} variant="outline" className="text-xs">

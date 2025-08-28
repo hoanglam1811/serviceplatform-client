@@ -1,9 +1,10 @@
-export interface Service {
+export interface ServiceDTO {
   id: string
   providerId: string
   title: string
   description: string
   category: string
+  categoryDTO?: ServiceCategoryDTO
   price: number
   duration: string
   images: string[]
@@ -13,13 +14,13 @@ export interface Service {
   updatedAt: Date
 }
 
-export interface ServiceCategory {
+export interface ServiceCategoryDTO {
   id: string
   name: string
   icon: string
 }
 
-export interface ServiceDTO {
+export interface Service {
   id: string
   userId: string
   categoryId: string
@@ -32,13 +33,30 @@ export interface ServiceDTO {
   discountPrice: number
   status: string
   imageUrl: string
-  isActive: boolean
+  tags: string[]
   createdAt: Date
   updatedAt: Date
-  category: ServiceCategoryDTO
+  category: ServiceCategory
 }
 
-export interface ServiceCategoryDTO {
+export interface ServiceCategory {
+  id: string
+  name: string
+  description: string
+  icon: string
+  createdAt: Date
+  updatedAt: Date
+}
+
+export interface CreateServiceCategoryDTO {
+  name: string
+  description: string
+  icon: string
+  createdAt: Date
+  updatedAt: Date
+}
+
+export interface UpdateServiceCategoryDTO {
   categoryId: string
   name: string
   description: string
@@ -47,7 +65,7 @@ export interface ServiceCategoryDTO {
   updatedAt: Date
 }
 
-export const serviceCategories: ServiceCategory[] = [
+export const serviceCategories: ServiceCategoryDTO[] = [
   // --- Freelancer / Online Services ---
   { id: "design", name: "Design & Creative", icon: "🎨" },
   { id: "development", name: "Web Development", icon: "💻" },

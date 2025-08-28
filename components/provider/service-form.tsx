@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -11,8 +11,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { X } from "lucide-react"
-import type { Service } from "@/types/service"
-import { serviceCategories } from "@/types/service"
+import type { Service, ServiceCategory } from "@/types/service"
+import { getAllCategories } from "@/services/serviceCategoryService"
 
 interface ServiceFormProps {
   service?: Service
@@ -21,12 +21,14 @@ interface ServiceFormProps {
 }
 
 export function ServiceForm({ service, onSave, onCancel }: ServiceFormProps) {
+  const [categories, setCategories] = useState<ServiceCategory[] | null>(null);
+
   const [formData, setFormData] = useState({
-    title: service?.title || "",
+    name: service?.name || "",
     description: service?.description || "",
-    category: service?.category || "",
-    price: service?.price || 0,
-    duration: service?.duration || 60,
+    categoryId: service?.categoryId || "",
+    discountPrice: service?.discountPrice|| 0,
+    duration: service?.duration || "",
     tags: service?.tags || [],
   })
   const [newTag, setNewTag] = useState("")
@@ -53,6 +55,26 @@ export function ServiceForm({ service, onSave, onCancel }: ServiceFormProps) {
     onSave(formData)
   }
 
+
+  const fetchCategories = async () => {
+    try{
+      const res= await getAllCategories()
+      setCategories(res.data);
+      console.log();
+      
+    }
+    catch(err){
+      console.log(err)
+    }
+    finally{
+
+    }
+  }
+
+  useEffect(() => {
+    fetchCategories();
+  }, []);
+
   return (
     <Card className="w-full max-w-2xl mx-auto">
       <CardHeader>
@@ -61,11 +83,11 @@ export function ServiceForm({ service, onSave, onCancel }: ServiceFormProps) {
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-2">
-            <Label htmlFor="title">Service Title</Label>
+            <Label htmlFor="name">Service Title</Label>
             <Input
-              id="title"
-              value={formData.title}
-              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+              id="name"
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               placeholder="e.g., Professional Logo Design"
               required
             />
@@ -87,14 +109,14 @@ export function ServiceForm({ service, onSave, onCancel }: ServiceFormProps) {
             <div className="space-y-2">
               <Label htmlFor="category">Category</Label>
               <Select
-                value={formData.category}
-                onValueChange={(value) => setFormData({ ...formData, category: value })}
+                value={formData.categoryId}
+                onValueChange={(value) => setFormData({ ...formData, categoryId: value })}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select a category" />
                 </SelectTrigger>
                 <SelectContent>
-                  {serviceCategories.map((category) => (
+                  {categories?.map((category) => (
                     <SelectItem key={category.id} value={category.id}>
                       {category.icon} {category.name}
                     </SelectItem>
@@ -109,8 +131,8 @@ export function ServiceForm({ service, onSave, onCancel }: ServiceFormProps) {
                 id="price"
                 type="number"
                 min="1"
-                value={formData.price}
-                onChange={(e) => setFormData({ ...formData, price: Number(e.target.value) })}
+                value={formData.discountPrice}
+                onChange={(e) => setFormData({ ...formData, discountPrice: Number(e.target.value) })}
                 required
               />
             </div>

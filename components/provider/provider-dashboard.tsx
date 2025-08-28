@@ -8,71 +8,23 @@ import { Plus, DollarSign, Calendar, Star, TrendingUp } from "lucide-react"
 import { ServiceForm } from "./service-form"
 import { ServiceCard } from "./service-card"
 import { BookingManagement } from "../booking/booking-management"
-import { serviceCategories, type Service, type ServiceDTO } from "@/types/service"
+import { type Service } from "@/types/service"
 import { useAuth } from "@/contexts/auth-context"
 import { getAllServicesByUserId } from "@/services/serviceService"
 import axios from "axios"
 
-// Mock services data
-const mockServices: Service[] = [
-  {
-    id: "1",
-    providerId: "1",
-    title: "Professional Logo Design",
-    description: "I'll create a unique, professional logo for your business that captures your brand identity.",
-    category: "design",
-    price: 150,
-    duration: "180 minutes",
-    images: [],
-    tags: ["logo", "branding", "design", "business"],
-    isActive: true,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  },
-  {
-    id: "2",
-    providerId: "1",
-    title: "Website Development",
-    description: "Custom responsive website development using modern technologies.",
-    category: "development",
-    price: 800,
-    duration: "480 minutes",
-    images: [],
-    tags: ["website", "react", "responsive", "modern"],
-    isActive: true,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  },
-]
 
 export function ProviderDashboard() {
   const { user } = useAuth()
-  const [services, setServices] = useState<Service[]>(mockServices)
+  const [services, setServices] = useState<Service[]>([])
   const [showServiceForm, setShowServiceForm] = useState(false)
   const [editingService, setEditingService] = useState<Service | null>(null)
-  const hasRun = useRef(false) // 👈 persists across renders
 
   const fetchServices = async () => {
     try{
       const res= await getAllServicesByUserId(user?.id || "")
-      const serviceDTOs: ServiceDTO[] = res.data;
-      setServices([
-        ...services,
-        ...serviceDTOs.map((serviceDTO) => ({
-          id: serviceDTO.id,
-          providerId: serviceDTO.userId,
-          title: serviceDTO.name,
-          description: serviceDTO.description,
-          category: serviceDTO.category.name,
-          price: serviceDTO.discountPrice,
-          duration: serviceDTO.duration,
-          images: [serviceDTO.imageUrl],
-          tags: ["test"],
-          isActive: true,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        } as Service))
-      ])
+      const services: Service[] = res.data;
+      setServices(services)
       
     }
     catch(err){
@@ -82,9 +34,10 @@ export function ProviderDashboard() {
 
     }
   }
-  
 
   const handleSaveService = (serviceData: Partial<Service>) => {
+    console.log(serviceData);
+    
     if (editingService) {
       // Update existing service
       setServices(
@@ -120,16 +73,14 @@ export function ProviderDashboard() {
 
   const handleToggleActive = (serviceId: string) => {
     setServices(
-      services.map((service) => (service.id === serviceId ? { ...service, isActive: !service.isActive } : service)),
+      services.map((service) => (service.id === serviceId ? { ...service, isActive: service.status == "active" ? false : true } : service)),
     )
   }
 
-  const activeServices = services.filter((service) => service.isActive)
-  const totalEarnings = services.reduce((sum, service) => sum + service.price, 0)
+  const activeServices = services.filter((service) => service.status.toLowerCase() === "active")
+  const totalEarnings = services.reduce((sum, service) => sum + service.discountPrice, 0)
 
   useEffect(() => {
-    if (hasRun.current) return // ✅ skip second run
-    hasRun.current = true
     fetchServices()
   }, [])
 

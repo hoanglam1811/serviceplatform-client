@@ -7,12 +7,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Search, Filter, Star, Clock, DollarSign } from "lucide-react"
-import type { Service } from "@/types/service"
+import type { Service, ServiceDTO } from "@/types/service"
 import { serviceCategories } from "@/types/service"
 import { ServiceDetailModal } from "./service-detail-modal"
 
 // Mock services data for browsing
-const mockBrowseServices: Service[] = [
+const mockBrowseServices: ServiceDTO[] = [
   {
     id: "1",
     providerId: "1",
@@ -106,7 +106,7 @@ const mockBrowseServices: Service[] = [
 ]
 
 interface ServiceBrowserProps {
-  onBookService?: (service: Service) => void
+  onBookService?: (service: ServiceDTO) => void
 }
 
 export function ServiceBrowser({ onBookService }: ServiceBrowserProps) {
@@ -114,7 +114,7 @@ export function ServiceBrowser({ onBookService }: ServiceBrowserProps) {
   const [selectedCategory, setSelectedCategory] = useState<string>("all")
   const [priceRange, setPriceRange] = useState<string>("all")
   const [sortBy, setSortBy] = useState<string>("newest")
-  const [selectedService, setSelectedService] = useState<Service | null>(null)
+  const [selectedService, setSelectedService] = useState<ServiceDTO | null>(null)
 
   const filteredServices = useMemo(() => {
     let filtered = mockBrowseServices.filter((service) => service.isActive)
@@ -288,7 +288,7 @@ export function ServiceBrowser({ onBookService }: ServiceBrowserProps) {
 }
 
 interface ServiceBrowseCardProps {
-  service: Service
+  service: ServiceDTO
   onViewDetails: () => void
   onBook: () => void
 }

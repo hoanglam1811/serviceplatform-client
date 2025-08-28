@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Calendar, Clock, Star, ShoppingBag } from "lucide-react"
 import { ServiceBrowser } from "./service-browser"
 import { BookingFlow } from "../booking/booking-flow"
-import type { Service } from "@/types/service"
+import type { Service, ServiceDTO } from "@/types/service"
 import type { Booking } from "@/types/booking"
 import { useAuth } from "@/contexts/auth-context"
 
@@ -55,10 +55,10 @@ const mockBookings: Booking[] = [
 export function CustomerDashboard() {
   const { user } = useAuth()
   const [bookings, setBookings] = useState<Booking[]>(mockBookings)
-  const [selectedService, setSelectedService] = useState<Service | null>(null)
+  const [selectedService, setSelectedService] = useState<ServiceDTO | null>(null)
   const [showBookingFlow, setShowBookingFlow] = useState(false)
 
-  const handleBookService = (service: Service) => {
+  const handleBookService = (service: ServiceDTO) => {
     setSelectedService(service)
     setShowBookingFlow(true)
   }

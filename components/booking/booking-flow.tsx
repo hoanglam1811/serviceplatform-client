@@ -8,12 +8,12 @@ import { Calendar } from "@/components/ui/calendar"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { CalendarDays, Clock, CreditCard, CheckCircle } from "lucide-react"
-import type { Service } from "@/types/service"
+import type { Service, ServiceDTO } from "@/types/service"
 import type { BookingRequest } from "@/types/booking"
 import { useAuth } from "@/contexts/auth-context"
 
 interface BookingFlowProps {
-  service: Service
+  service: ServiceDTO
   isOpen: boolean
   onClose: () => void
   onBookingComplete: (bookingId: string) => void
