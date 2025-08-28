@@ -11,6 +11,7 @@ import { BookingFlow } from "../booking/booking-flow"
 import type { Service } from "@/types/service"
 import type { Booking } from "@/types/booking"
 import { useAuth } from "@/contexts/auth-context"
+import UserProfile from "@/app/user-profile/page"
 
 // Mock booking data
 const mockBookings: Booking[] = [
@@ -64,9 +65,7 @@ export function CustomerDashboard() {
   }
 
   const handleBookingComplete = (bookingId: string) => {
-    // Add new booking to the list
     console.log("Booking completed:", bookingId)
-    // In a real app, you'd fetch the updated bookings from the server
   }
 
   const completedBookings = bookings.filter((booking) => booking.status === "completed")
@@ -125,6 +124,7 @@ export function CustomerDashboard() {
           <TabsTrigger value="browse">Browse Services</TabsTrigger>
           <TabsTrigger value="bookings">My Bookings</TabsTrigger>
           <TabsTrigger value="favorites">Favorites</TabsTrigger>
+          <TabsTrigger value="profile">My Profile</TabsTrigger>
         </TabsList>
 
         <TabsContent value="browse" className="space-y-4">
@@ -207,6 +207,17 @@ export function CustomerDashboard() {
                 <Star className="h-12 w-12 mx-auto mb-4 opacity-50" />
                 <p>No favorites yet. Heart services you love to save them here!</p>
               </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="profile" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>My Profile</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <UserProfile />
             </CardContent>
           </Card>
         </TabsContent>

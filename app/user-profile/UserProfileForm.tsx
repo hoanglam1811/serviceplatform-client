@@ -3,12 +3,15 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Camera, IdCard, Settings, User } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export default function UserProfileForm({ userData, onSave }: any) {
     const [form, setForm] = useState(userData);
+    console.log(userData)
 
-    const handleChange = (e: any) => {
-        setForm({ ...form, [e.target.name]: e.target.value });
+    const handleChange = (field: string, value: string) => {
+        setForm((prev: any) => ({ ...prev, [field]: value }));
     };
 
     const handleSubmit = (e: any) => {
@@ -17,41 +20,170 @@ export default function UserProfileForm({ userData, onSave }: any) {
     };
 
     return (
-        <form onSubmit={handleSubmit} className="space-y-4 bg-white/80 p-6 rounded-2xl shadow-lg">
-            <div>
-                <label className="block text-sm font-medium">Họ và tên</label>
-                <Input name="fullName" value={form.fullName || ""} onChange={handleChange} />
+        <div className="relative p-6 space-y-8">
+            {/* Avatar */}
+            <div className="flex items-center gap-4">
+                {/* Avatar */}
+                <div className="relative group">
+                    <img
+                        src={form.avatarUrl || "/default-avatar.png"}
+                        alt="avatar"
+                        className="w-24 h-24 rounded-full border-2 border-gray-200 shadow-md object-cover transition group-hover:opacity-80"
+                    />
+                    {/* Upload button */}
+                    <label className="absolute bottom-0 right-0 bg-black p-2 rounded-full cursor-pointer shadow-md transform transition hover:scale-105">
+                        <Camera className="w-4 h-4 text-white" />
+                        <input
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                if (file) {
+                                    const url = URL.createObjectURL(file);
+                                    setForm({ ...form, avatarUrl: url });
+                                }
+                            }}
+                        />
+                    </label>
+                </div>
+                <div>
+                    <h2 className="text-xl font-semibold">{form.fullName}</h2>
+                    <p className="text-gray-500">{form.email}</p>
+                </div>
             </div>
 
-            <div>
-                <label className="block text-sm font-medium">Email</label>
-                <Input name="email" type="email" value={form.email || ""} onChange={handleChange} />
+            {/* Section: Thông tin cá nhân */}
+            <div className="p-6 space-y-4">
+                <h3 className="flex items-center gap-2 text-lg font-semibold">
+                    <User className="w-5 h-5 text-blue-500" /> Thông tin cá nhân
+                </h3>
+                <div className="grid md:grid-cols-2 gap-4">
+                    <div>
+                        <label className="block text-sm font-bold text-muted-foreground mb-1">
+                            Tên đăng nhập
+                        </label>
+                        <Input
+                            disabled
+                            value={form.username}
+                            onChange={(e) => handleChange("username", e.target.value)}
+                            placeholder="Tên đăng nhập"
+                        />
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-bold text-muted-foreground mb-1">
+                            Email
+                        </label>
+                        <Input
+                            disabled
+                            value={form.email}
+                            onChange={(e) => handleChange("email", e.target.value)}
+                            placeholder="Email"
+                        />
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-bold text-muted-foreground mb-1">
+                            Họ tên
+                        </label>
+                        <Input
+                            value={form.fullName}
+                            onChange={(e: any) => handleChange("fullName", e.target.value)}
+                            placeholder="Họ tên"
+                        />
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-bold text-muted-foreground mb-1">
+                            Số điện thoại
+                        </label>
+                        <Input
+                            value={form.phoneNumber}
+                            onChange={(e) => handleChange("phoneNumber", e.target.value)}
+                            placeholder="Số điện thoại"
+                        />
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-bold text-muted-foreground mb-1">
+                            Địa chỉ
+                        </label>
+                        <Input
+                            value={form.address}
+                            onChange={(e) => handleChange("address", e.target.value)}
+                            placeholder="Địa chỉ"
+                        />
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-bold text-muted-foreground mb-1">
+                            Giới tính
+                        </label>
+                        <Select
+                            value={form.gender ?? ""}
+                            onValueChange={(v) => handleChange("gender", v)}
+                        >
+                            <SelectTrigger className="rounded-xl w-full">
+                                <SelectValue placeholder="Chọn giới tính" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="Male">Nam</SelectItem>
+                                <SelectItem value="Female">Nữ</SelectItem>
+                                <SelectItem value="Other">Khác</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+                </div>
+
+                <Textarea
+                    value={form.bio}
+                    onChange={(e) => handleChange("bio", e.target.value)}
+                    placeholder="Mô tả bản thân"
+                />
             </div>
 
-            <div>
-                <label className="block text-sm font-medium">Số điện thoại</label>
-                <Input name="phoneNumber" value={form.phoneNumber || ""} onChange={handleChange} />
-            </div>
+            <div className="p-6 space-y-4">
+                <h3 className="flex items-center gap-2 text-lg font-semibold">
+                    <IdCard className="w-5 h-5 text-green-500" /> Giấy tờ tùy thân
+                </h3>
+                <div className="grid grid-cols-2 gap-4">
+                    {(form.nationalId?.split(",") || []).map((url: string, idx: number) => (
+                        <img
+                            key={idx}
+                            src={url.trim()}
+                            alt={`National ID ${idx + 1}`}
+                            className="rounded-xl border shadow-sm w-full h-[250px] object-cover"
+                        />
+                    ))}
+                </div>
 
-            <div>
-                <label className="block text-sm font-medium">Địa chỉ</label>
-                <Input name="address" value={form.address || ""} onChange={handleChange} />
-            </div>
+                <div className="p-6 space-y-4">
+                    <h3 className="flex items-center gap-2 text-lg font-semibold">
+                        <Settings className="w-5 h-5 text-purple-500" /> Thông tin hệ thống
+                    </h3>
+                    <div className="grid md:grid-cols-2 gap-4">
+                        <div>
+                            <label className="text-sm text-gray-500">Trạng thái</label>
+                            <p className="font-bold">{form.status}</p>
+                        </div>
+                        <div>
+                            <label className="text-sm text-gray-500">Vai trò</label>
+                            <p className="font-bold">{form.role}</p>
+                        </div>
+                    </div>
+                </div>
 
-            <div>
-                <label className="block text-sm font-medium">Giới thiệu bản thân</label>
-                <Textarea name="bio" value={form.bio || ""} onChange={handleChange} />
+                {/* Floating Save Button */}
+                <div className="flex justify-end">
+                    <Button
+                        onClick={handleSubmit}
+                        className="rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-6 py-3 shadow-lg hover:shadow-xl hover:scale-105 transition"
+                    >
+                        💾 Lưu thay đổi
+                    </Button>
+                </div>
             </div>
-
-            <div>
-                <label className="block text-sm font-medium">Ảnh đại diện (URL)</label>
-                <Input name="avatarUrl" value={form.avatarUrl || ""} onChange={handleChange} />
-                {form.avatarUrl && (
-                    <img src={form.avatarUrl} alt="avatar" className="mt-2 w-20 h-20 rounded-full object-cover" />
-                )}
-            </div>
-
-            <Button type="submit" className="w-full">Lưu thay đổi</Button>
-        </form>
+        </div>
     );
 }
