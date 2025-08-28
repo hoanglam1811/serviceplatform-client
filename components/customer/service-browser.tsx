@@ -21,7 +21,7 @@ const mockBrowseServices: Service[] = [
       "I'll create a unique, professional logo for your business that captures your brand identity. Includes 3 concepts, unlimited revisions, and final files in all formats.",
     category: "design",
     price: 150,
-    duration: 180,
+    duration: "180 minutes",
     images: ["/placeholder-lk25b.png"],
     tags: ["logo", "branding", "design", "business"],
     isActive: true,
@@ -36,7 +36,7 @@ const mockBrowseServices: Service[] = [
       "Full-stack web development using React, Next.js, and modern technologies. Responsive design, SEO optimized, and mobile-friendly.",
     category: "development",
     price: 800,
-    duration: 480,
+    duration: "480 minutes",
     images: ["/modern-website-development.png"],
     tags: ["website", "react", "responsive", "modern"],
     isActive: true,
@@ -51,7 +51,7 @@ const mockBrowseServices: Service[] = [
       "Engaging content that converts. Blog posts, website copy, product descriptions, and marketing materials that speak to your audience.",
     category: "writing",
     price: 75,
-    duration: 120,
+    duration: "120 minutes",
     images: ["/content-writing-workspace.png"],
     tags: ["copywriting", "content", "marketing", "SEO"],
     isActive: true,
@@ -66,7 +66,7 @@ const mockBrowseServices: Service[] = [
       "Complete social media strategy including content calendar, hashtag research, and growth tactics for Instagram, Facebook, and LinkedIn.",
     category: "marketing",
     price: 200,
-    duration: 240,
+    duration: "240 minutes",
     images: ["/social-media-dashboard.png"],
     tags: ["social media", "marketing", "strategy", "growth"],
     isActive: true,
@@ -81,7 +81,7 @@ const mockBrowseServices: Service[] = [
       "Strategic business advice to help grow your company. Market analysis, business planning, and actionable insights from 10+ years experience.",
     category: "consulting",
     price: 120,
-    duration: 90,
+    duration: "90 minutes",
     images: ["/business-consultation.png"],
     tags: ["business", "strategy", "consulting", "growth"],
     isActive: true,
@@ -96,7 +96,7 @@ const mockBrowseServices: Service[] = [
       "High-quality photography for portraits, events, products, or real estate. Includes editing and delivery of high-resolution images.",
     category: "photography",
     price: 300,
-    duration: 180,
+    duration: "180 minutes",
     images: ["/professional-photography-portfolio.png"],
     tags: ["photography", "portraits", "events", "professional"],
     isActive: true,
@@ -158,7 +158,7 @@ export function ServiceBrowser({ onBookService }: ServiceBrowserProps) {
         filtered.sort((a, b) => b.price - a.price)
         break
       case "duration":
-        filtered.sort((a, b) => a.duration - b.duration)
+        filtered.sort((a, b) => Number(a.duration.split(" ")[0]) - Number(b.duration.split(" ")[0]))
         break
       default:
         filtered.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())

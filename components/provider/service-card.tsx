@@ -49,7 +49,7 @@ export function ServiceCard({ service, onEdit, onDelete, onToggleActive }: Servi
         <p className="text-sm text-gray-600 mb-3 line-clamp-2">{service.description}</p>
         <div className="flex items-center justify-between text-sm">
           <span className="font-semibold text-green-600">${service.price}</span>
-          <span className="text-gray-500">{service.duration} min</span>
+          <span className="text-gray-500">{service.duration}</span>
         </div>
         {service.tags.length > 0 && (
           <div className="flex flex-wrap gap-1 mt-3">

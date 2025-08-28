@@ -117,14 +117,14 @@ export function ServiceForm({ service, onSave, onCancel }: ServiceFormProps) {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="duration">Duration (minutes)</Label>
+            <Label htmlFor="duration">Duration</Label>
             <Input
               id="duration"
-              type="number"
-              min="15"
-              step="15"
+              type="text"
+              //min="15"
+              //step="15"
               value={formData.duration}
-              onChange={(e) => setFormData({ ...formData, duration: Number(e.target.value) })}
+              onChange={(e) => setFormData({ ...formData, duration: e.target.value })}
               required
             />
           </div>

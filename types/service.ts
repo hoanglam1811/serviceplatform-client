@@ -5,7 +5,7 @@ export interface Service {
   description: string
   category: string
   price: number
-  duration: number
+  duration: string
   images: string[]
   tags: string[]
   isActive: boolean
@@ -17,6 +17,34 @@ export interface ServiceCategory {
   id: string
   name: string
   icon: string
+}
+
+export interface ServiceDTO {
+  id: string
+  userId: string
+  categoryId: string
+  name: string
+  description: string
+  type: string
+  duration: string
+  serviceArea: string
+  originalPrice: number
+  discountPrice: number
+  status: string
+  imageUrl: string
+  isActive: boolean
+  createdAt: Date
+  updatedAt: Date
+  category: ServiceCategoryDTO
+}
+
+export interface ServiceCategoryDTO {
+  categoryId: string
+  name: string
+  description: string
+  icon: string
+  createdAt: Date
+  updatedAt: Date
 }
 
 export const serviceCategories: ServiceCategory[] = [

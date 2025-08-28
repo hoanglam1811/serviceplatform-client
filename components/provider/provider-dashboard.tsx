@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -8,9 +8,10 @@ import { Plus, DollarSign, Calendar, Star, TrendingUp } from "lucide-react"
 import { ServiceForm } from "./service-form"
 import { ServiceCard } from "./service-card"
 import { BookingManagement } from "../booking/booking-management"
-import type { Service } from "@/types/service"
+import { serviceCategories, type Service, type ServiceDTO } from "@/types/service"
 import { useAuth } from "@/contexts/auth-context"
 import { getAllServicesByUserId } from "@/services/serviceService"
+import axios from "axios"
 
 // Mock services data
 const mockServices: Service[] = [
@@ -21,7 +22,7 @@ const mockServices: Service[] = [
     description: "I'll create a unique, professional logo for your business that captures your brand identity.",
     category: "design",
     price: 150,
-    duration: 180,
+    duration: "180 minutes",
     images: [],
     tags: ["logo", "branding", "design", "business"],
     isActive: true,
@@ -35,7 +36,7 @@ const mockServices: Service[] = [
     description: "Custom responsive website development using modern technologies.",
     category: "development",
     price: 800,
-    duration: 480,
+    duration: "480 minutes",
     images: [],
     tags: ["website", "react", "responsive", "modern"],
     isActive: true,
@@ -49,11 +50,30 @@ export function ProviderDashboard() {
   const [services, setServices] = useState<Service[]>(mockServices)
   const [showServiceForm, setShowServiceForm] = useState(false)
   const [editingService, setEditingService] = useState<Service | null>(null)
+  const hasRun = useRef(false) // 👈 persists across renders
 
   const fetchServices = async () => {
     try{
-      const res = await getAllServicesByUserId(user?.id || "")
-      console.log(res);
+      const res= await getAllServicesByUserId(user?.id || "")
+      const serviceDTOs: ServiceDTO[] = res.data;
+      setServices([
+        ...services,
+        ...serviceDTOs.map((serviceDTO) => ({
+          id: serviceDTO.id,
+          providerId: serviceDTO.userId,
+          title: serviceDTO.name,
+          description: serviceDTO.description,
+          category: serviceDTO.category.name,
+          price: serviceDTO.discountPrice,
+          duration: serviceDTO.duration,
+          images: [serviceDTO.imageUrl],
+          tags: ["test"],
+          isActive: true,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        } as Service))
+      ])
+      
     }
     catch(err){
       console.log(err)
@@ -62,6 +82,7 @@ export function ProviderDashboard() {
 
     }
   }
+  
 
   const handleSaveService = (serviceData: Partial<Service>) => {
     if (editingService) {
@@ -106,6 +127,12 @@ export function ProviderDashboard() {
   const activeServices = services.filter((service) => service.isActive)
   const totalEarnings = services.reduce((sum, service) => sum + service.price, 0)
 
+  useEffect(() => {
+    if (hasRun.current) return // ✅ skip second run
+    hasRun.current = true
+    fetchServices()
+  }, [])
+
   if (showServiceForm) {
     return (
       <ServiceForm
@@ -118,10 +145,6 @@ export function ProviderDashboard() {
       />
     )
   }
-
-  useEffect(() => {
-    fetchServices()
-  }, [])
 
   return (
     <div className="space-y-6">
