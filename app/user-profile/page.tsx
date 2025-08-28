@@ -8,11 +8,12 @@ import { useAuth } from "@/contexts/auth-context";
 export default function UserProfile() {
     const { user } = useAuth();
     const [userData, setUserData] = useState<any>(null);
-    const { toast } = useToast()
+    const { toast } = useToast();
+    console.log(user)
 
     useEffect(() => {
         if (user?.id) {
-            getUserById(user.id).then(setUserData);
+            getUserById(user.id).then((result) => setUserData(result.data));
         }
     }, [user]);
 
@@ -35,12 +36,10 @@ export default function UserProfile() {
         }
     };
 
-
     if (!userData) return <p className="text-center mt-10">Đang tải...</p>;
 
     return (
-        <div className="p-6 max-w-3xl mx-auto">
-            <h1 className="text-2xl font-bold mb-6">Thông tin cá nhân</h1>
+        <div className="p-6 max-w-6xl mx-auto">
             <UserProfileForm userData={userData} onSave={handleUpdate} />
         </div>
     );
