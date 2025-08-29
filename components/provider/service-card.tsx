@@ -19,7 +19,7 @@ export function ServiceCard({ service, onEdit, onDelete, onToggleActive }: Servi
   
 
   return (
-    <Card className={`${service.status.toLowerCase() != "active" ? "opacity-60" : ""}`}>
+    <Card className={`${service?.status?.toLowerCase() != "active" ? "opacity-60" : ""}`}>
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
           <div className="flex-1">
@@ -28,7 +28,7 @@ export function ServiceCard({ service, onEdit, onDelete, onToggleActive }: Servi
               <Badge variant="outline">
                 {service.category?.icon} {service.category?.name} 
               </Badge>
-              <Badge variant={service.status == "active" ? "default" : "secondary"}>
+              <Badge variant={service?.status?.toLowerCase() == "active" ? "default" : "secondary"}>
                 {service.status}
               </Badge>
             </div>

@@ -10,7 +10,7 @@ import { ServiceCard } from "./service-card"
 import { BookingManagement } from "../booking/booking-management"
 import { type Service } from "@/types/service"
 import { useAuth } from "@/contexts/auth-context"
-import { getAllServicesByUserId } from "@/services/serviceService"
+import { createService, getAllServicesByUserId } from "@/services/serviceService"
 import axios from "axios"
 
 
@@ -35,7 +35,7 @@ export function ProviderDashboard() {
     }
   }
 
-  const handleSaveService = (serviceData: Partial<Service>) => {
+  const handleSaveService = async (serviceData: Partial<Service>) => {
     console.log(serviceData);
     
     if (editingService) {
@@ -47,7 +47,11 @@ export function ProviderDashboard() {
       )
     } else {
       // Create new service
-      const newService: Service = {
+      serviceData.userId = user?.id
+      serviceData.status = "active"
+      await createService(serviceData as any)
+      fetchServices()
+      /*const newService: Service = {
         id: Date.now().toString(),
         providerId: user?.id || "",
         ...serviceData,
@@ -56,7 +60,7 @@ export function ProviderDashboard() {
         createdAt: new Date(),
         updatedAt: new Date(),
       } as Service
-      setServices([...services, newService])
+      setServices([...services, newService])*/
     }
     setShowServiceForm(false)
     setEditingService(null)
@@ -73,11 +77,11 @@ export function ProviderDashboard() {
 
   const handleToggleActive = (serviceId: string) => {
     setServices(
-      services.map((service) => (service.id === serviceId ? { ...service, isActive: service.status == "active" ? false : true } : service)),
+      services.map((service) => (service.id === serviceId ? { ...service, status: service?.status?.toLowerCase() == "active" ? "Inactive" : "Active" } : service)),
     )
   }
 
-  const activeServices = services.filter((service) => service.status.toLowerCase() === "active")
+  const activeServices = services.filter((service) => service?.status?.toLowerCase() === "active")
   const totalEarnings = services.reduce((sum, service) => sum + service.discountPrice, 0)
 
   useEffect(() => {
