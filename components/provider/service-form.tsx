@@ -24,6 +24,7 @@ export function ServiceForm({ service, onSave, onCancel }: ServiceFormProps) {
   const [categories, setCategories] = useState<ServiceCategory[] | null>(null);
 
   const [formData, setFormData] = useState({
+    id: service?.id || "",
     name: service?.name || "",
     description: service?.description || "",
     categoryId: service?.categoryId || "",
@@ -60,8 +61,6 @@ export function ServiceForm({ service, onSave, onCancel }: ServiceFormProps) {
     try{
       const res= await getAllCategories()
       setCategories(res.data);
-      console.log();
-      
     }
     catch(err){
       console.log(err)

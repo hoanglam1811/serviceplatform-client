@@ -10,8 +10,7 @@ import { ServiceCard } from "./service-card"
 import { BookingManagement } from "../booking/booking-management"
 import { type Service } from "@/types/service"
 import { useAuth } from "@/contexts/auth-context"
-import { createService, getAllServicesByUserId } from "@/services/serviceService"
-import axios from "axios"
+import { createService, getAllServicesByUserId, updateService } from "@/services/serviceService"
 
 
 export function ProviderDashboard() {
@@ -36,21 +35,22 @@ export function ProviderDashboard() {
   }
 
   const handleSaveService = async (serviceData: Partial<Service>) => {
-    console.log(serviceData);
     
     if (editingService) {
+      
       // Update existing service
-      setServices(
+      if(!serviceData.id) return;
+      await updateService(serviceData.id, serviceData as any)
+      /*setServices(
         services.map((service) =>
           service.id === editingService.id ? { ...service, ...serviceData, updatedAt: new Date() } : service,
         ),
-      )
+      )*/
     } else {
       // Create new service
       serviceData.userId = user?.id
-      serviceData.status = "active"
+      serviceData.status = "Active"
       await createService(serviceData as any)
-      fetchServices()
       /*const newService: Service = {
         id: Date.now().toString(),
         providerId: user?.id || "",
@@ -62,6 +62,7 @@ export function ProviderDashboard() {
       } as Service
       setServices([...services, newService])*/
     }
+    await fetchServices()
     setShowServiceForm(false)
     setEditingService(null)
   }

@@ -35,7 +35,7 @@ export function ServiceCard({ service, onEdit, onDelete, onToggleActive }: Servi
           </div>
           <div className="flex gap-1">
             <Button size="sm" variant="ghost" onClick={() => onToggleActive(service.id)}>
-              {service.status == "active" ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              {service.status.toLowerCase() == "active" ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
             </Button>
             <Button size="sm" variant="ghost" onClick={() => onEdit(service)}>
               <Edit className="h-4 w-4" />
