@@ -1,18 +1,20 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Search, Filter, Star, Clock, DollarSign } from "lucide-react"
-import type { Service, ServiceDTO } from "@/types/service"
+import type { Service, ServiceCategory, ServiceDTO } from "@/types/service"
 import { serviceCategories } from "@/types/service"
 import { ServiceDetailModal } from "./service-detail-modal"
+import { getAllServices } from "@/services/serviceService"
+import { getAllCategories } from "@/services/serviceCategoryService"
 
 // Mock services data for browsing
-const mockBrowseServices: ServiceDTO[] = [
+/*const mockBrowseServices: ServiceDTO[] = [
   {
     id: "1",
     providerId: "1",
@@ -103,10 +105,10 @@ const mockBrowseServices: ServiceDTO[] = [
     createdAt: new Date(),
     updatedAt: new Date(),
   },
-]
+]*/
 
 interface ServiceBrowserProps {
-  onBookService?: (service: ServiceDTO) => void
+  onBookService?: (service: Service) => void
 }
 
 export function ServiceBrowser({ onBookService }: ServiceBrowserProps) {
@@ -114,37 +116,57 @@ export function ServiceBrowser({ onBookService }: ServiceBrowserProps) {
   const [selectedCategory, setSelectedCategory] = useState<string>("all")
   const [priceRange, setPriceRange] = useState<string>("all")
   const [sortBy, setSortBy] = useState<string>("newest")
-  const [selectedService, setSelectedService] = useState<ServiceDTO | null>(null)
+  const [selectedService, setSelectedService] = useState<Service | null>(null)
+  const [services, setServices] = useState<Service[] | null>(null);
+  const [categories, setCategories] = useState<ServiceCategory[] | null>(null);
+
+  const fetchData = async () => {
+    try{
+      const [services, categories]= await Promise.all([
+        getAllServices(),
+        getAllCategories()
+      ]) 
+      setServices(services.data)
+      setCategories(categories.data)
+    }
+    catch(err){
+      console.log(err)
+    }
+    finally{
+
+    }
+  }
 
   const filteredServices = useMemo(() => {
-    let filtered = mockBrowseServices.filter((service) => service.isActive)
+    if(!services || !categories) return [];
+    let filtered = services.filter((service) => service.status.toLowerCase() == "active")
 
     // Search filter
     if (searchQuery) {
       filtered = filtered.filter(
         (service) =>
-          service.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          service.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
           service.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          service.tags.some((tag) => tag.toLowerCase().includes(searchQuery.toLowerCase())),
+          service?.tags?.some((tag) => tag.toLowerCase().includes(searchQuery.toLowerCase())),
       )
     }
 
     // Category filter
     if (selectedCategory !== "all") {
-      filtered = filtered.filter((service) => service.category === selectedCategory)
+      filtered = filtered.filter((service) => service.category.id === selectedCategory)
     }
 
     // Price range filter
     if (priceRange !== "all") {
       switch (priceRange) {
         case "under-100":
-          filtered = filtered.filter((service) => service.price < 100)
+          filtered = filtered.filter((service) => service.discountPrice < 100)
           break
         case "100-300":
-          filtered = filtered.filter((service) => service.price >= 100 && service.price <= 300)
+          filtered = filtered.filter((service) => service.discountPrice >= 100 && service.discountPrice <= 300)
           break
         case "over-300":
-          filtered = filtered.filter((service) => service.price > 300)
+          filtered = filtered.filter((service) => service.discountPrice > 300)
           break
       }
     }
@@ -152,20 +174,25 @@ export function ServiceBrowser({ onBookService }: ServiceBrowserProps) {
     // Sort
     switch (sortBy) {
       case "price-low":
-        filtered.sort((a, b) => a.price - b.price)
+        filtered.sort((a, b) => a.discountPrice - b.discountPrice)
         break
       case "price-high":
-        filtered.sort((a, b) => b.price - a.price)
+        filtered.sort((a, b) => b.discountPrice - a.discountPrice)
         break
       case "duration":
         filtered.sort((a, b) => Number(a.duration.split(" ")[0]) - Number(b.duration.split(" ")[0]))
         break
       default:
-        filtered.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+        filtered.sort((a, b) => b?.createdAt?.getTime() - a?.createdAt?.getTime())
     }
 
     return filtered
-  }, [searchQuery, selectedCategory, priceRange, sortBy])
+  }, [searchQuery, selectedCategory, priceRange, sortBy, services])
+
+  useEffect(() => {
+    fetchData()
+    
+  }, [])
 
   return (
     <div className="space-y-6">
@@ -201,7 +228,7 @@ export function ServiceBrowser({ onBookService }: ServiceBrowserProps) {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Categories</SelectItem>
-                  {serviceCategories.map((category) => (
+                  {categories?.map((category) => (
                     <SelectItem key={category.id} value={category.id}>
                       {category.icon} {category.name}
                     </SelectItem>
@@ -265,6 +292,7 @@ export function ServiceBrowser({ onBookService }: ServiceBrowserProps) {
             <ServiceBrowseCard
               key={service.id}
               service={service}
+              categories={categories || []}
               onViewDetails={() => setSelectedService(service)}
               onBook={() => onBookService?.(service)}
             />
@@ -288,26 +316,27 @@ export function ServiceBrowser({ onBookService }: ServiceBrowserProps) {
 }
 
 interface ServiceBrowseCardProps {
-  service: ServiceDTO
+  service: Service
+  categories: ServiceCategory[]
   onViewDetails: () => void
   onBook: () => void
 }
 
-function ServiceBrowseCard({ service, onViewDetails, onBook }: ServiceBrowseCardProps) {
-  const category = serviceCategories.find((cat) => cat.id === service.category)
+function ServiceBrowseCard({ service, categories,  onViewDetails, onBook }: ServiceBrowseCardProps) {
+  const category = categories.find((cat) => cat.id === service.category.id)
 
   return (
     <Card className="py-0 pb-6 hover:shadow-lg transition-shadow cursor-pointer" onClick={onViewDetails}>
       <div className="aspect-video bg-gray-100 rounded-t-lg overflow-hidden">
         <img
-          src={service.images[0] || "/placeholder.svg?height=200&width=300&query=service placeholder"}
-          alt={service.title}
+          src={service.imageUrl || "/placeholder.svg?height=200&width=300&query=service placeholder"}
+          alt={service.name}
           className="w-full h-full object-cover"
         />
       </div>
       <CardHeader className="pb-2">
         <div className="flex items-start justify-between">
-          <CardTitle className="text-lg line-clamp-2">{service.title}</CardTitle>
+          <CardTitle className="text-lg line-clamp-2">{service.name}</CardTitle>
           <div className="flex items-center gap-1 text-sm text-yellow-600">
             <Star className="h-4 w-4 fill-current" />
             <span>4.9</span>
@@ -323,21 +352,21 @@ function ServiceBrowseCard({ service, onViewDetails, onBook }: ServiceBrowseCard
         <div className="flex items-center justify-between text-sm mb-4">
           <div className="flex items-center gap-1 text-gray-500">
             <Clock className="h-4 w-4" />
-            <span>{service.duration} min</span>
+            <span>{service.duration}</span>
           </div>
           <div className="flex items-center gap-1 font-semibold text-green-600">
             <DollarSign className="h-4 w-4" />
-            <span>{service.price}</span>
+            <span>{service.discountPrice}</span>
           </div>
         </div>
 
         <div className="flex flex-wrap gap-1 mb-4">
-          {service.tags.slice(0, 3).map((tag) => (
+          {service?.tags?.slice(0, 3).map((tag) => (
             <Badge key={tag} variant="secondary" className="text-xs">
               {tag}
             </Badge>
           ))}
-          {service.tags.length > 3 && (
+          {service?.tags?.length > 3 && (
             <Badge variant="secondary" className="text-xs">
               +{service.tags.length - 3}
             </Badge>

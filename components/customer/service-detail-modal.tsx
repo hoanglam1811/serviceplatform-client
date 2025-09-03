@@ -8,27 +8,27 @@ import type { Service, ServiceDTO } from "@/types/service"
 import { serviceCategories } from "@/types/service"
 
 interface ServiceDetailModalProps {
-  service: ServiceDTO
+  service: Service
   onClose: () => void
   onBook: () => void
 }
 
 export function ServiceDetailModal({ service, onClose, onBook }: ServiceDetailModalProps) {
-  const category = serviceCategories.find((cat) => cat.id === service.category)
+  const category = serviceCategories.find((cat) => cat.id === service.category.id)
 
   return (
     <Dialog open={true} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-2xl">{service.title}</DialogTitle>
+          <DialogTitle className="text-2xl">{service.name}</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-6">
           {/* Service Image */}
           <div className="aspect-video bg-gray-100 rounded-lg overflow-hidden">
             <img
-              src={service.images[0] || "/placeholder.svg?height=300&width=500&query=service detail image"}
-              alt={service.title}
+              src={service.imageUrl || "/placeholder.svg?height=300&width=500&query=service detail image"}
+              alt={service.name}
               className="w-full h-full object-cover"
             />
           </div>
@@ -63,7 +63,7 @@ export function ServiceDetailModal({ service, onClose, onBook }: ServiceDetailMo
               <div>
                 <h4 className="font-semibold mb-2">Skills & Tags:</h4>
                 <div className="flex flex-wrap gap-2">
-                  {service.tags.map((tag) => (
+                  {service?.tags?.map((tag) => (
                     <Badge key={tag} variant="secondary">
                       {tag}
                     </Badge>
@@ -76,7 +76,7 @@ export function ServiceDetailModal({ service, onClose, onBook }: ServiceDetailMo
               {/* Pricing Card */}
               <div className="border rounded-lg p-4 bg-gray-50">
                 <div className="text-center mb-4">
-                  <div className="text-3xl font-bold text-green-600 mb-1">${service.price}</div>
+                  <div className="text-3xl font-bold text-green-600 mb-1">${service.discountPrice}</div>
                   <div className="text-sm text-gray-600 flex items-center justify-center gap-1">
                     <Clock className="h-4 w-4" />
                     {service.duration} minutes

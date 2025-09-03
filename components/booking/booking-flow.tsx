@@ -13,7 +13,7 @@ import type { BookingRequest } from "@/types/booking"
 import { useAuth } from "@/contexts/auth-context"
 
 interface BookingFlowProps {
-  service: ServiceDTO
+  service: Service
   isOpen: boolean
   onClose: () => void
   onBookingComplete: (bookingId: string) => void
@@ -111,7 +111,7 @@ export function BookingFlow({ service, isOpen, onClose, onBookingComplete }: Boo
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <CalendarDays className="h-5 w-5" />
-            Book Service: {service.title}
+            Book Service: {service.name}
           </DialogTitle>
         </DialogHeader>
 
@@ -147,11 +147,11 @@ export function BookingFlow({ service, isOpen, onClose, onBookingComplete }: Boo
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="font-semibold">{service.title}</h3>
+                  <h3 className="font-semibold">{service.name}</h3>
                   <p className="text-sm text-gray-600">Duration: {service.duration} minutes</p>
                 </div>
                 <div className="text-right">
-                  <div className="text-2xl font-bold text-green-600">${service.price}</div>
+                  <div className="text-2xl font-bold text-green-600">${service.discountPrice}</div>
                 </div>
               </div>
             </CardContent>
@@ -252,7 +252,7 @@ export function BookingFlow({ service, isOpen, onClose, onBookingComplete }: Boo
                 <CardContent className="space-y-3">
                   <div className="flex justify-between">
                     <span>Service:</span>
-                    <span>{service.title}</span>
+                    <span>{service.name}</span>
                   </div>
                   <div className="flex justify-between">
                     <span>Date:</span>
@@ -269,7 +269,7 @@ export function BookingFlow({ service, isOpen, onClose, onBookingComplete }: Boo
                   <hr />
                   <div className="flex justify-between font-semibold text-lg">
                     <span>Total:</span>
-                    <span className="text-green-600">${service.price}</span>
+                    <span className="text-green-600">${service.discountPrice}</span>
                   </div>
                 </CardContent>
               </Card>
@@ -301,7 +301,7 @@ export function BookingFlow({ service, isOpen, onClose, onBookingComplete }: Boo
                   Back
                 </Button>
                 <Button onClick={handlePayment} disabled={isProcessing}>
-                  {isProcessing ? "Processing..." : `Pay $${service.price}`}
+                  {isProcessing ? "Processing..." : `Pay $${service.discountPrice}`}
                 </Button>
               </div>
             </div>
@@ -314,7 +314,7 @@ export function BookingFlow({ service, isOpen, onClose, onBookingComplete }: Boo
               </div>
               <h3 className="text-xl font-semibold text-green-600">Booking Confirmed!</h3>
               <p className="text-gray-600">
-                Your booking for "{service.title}" has been confirmed for {selectedDate?.toLocaleDateString()} at{" "}
+                Your booking for "{service.name}" has been confirmed for {selectedDate?.toLocaleDateString()} at{" "}
                 {selectedTime}.
               </p>
               <div className="bg-blue-50 p-4 rounded-lg">

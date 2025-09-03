@@ -56,10 +56,10 @@ const mockBookings: Booking[] = [
 export function CustomerDashboard() {
   const { user } = useAuth()
   const [bookings, setBookings] = useState<Booking[]>(mockBookings)
-  const [selectedService, setSelectedService] = useState<ServiceDTO | null>(null)
+  const [selectedService, setSelectedService] = useState<Service | null>(null)
   const [showBookingFlow, setShowBookingFlow] = useState(false)
 
-  const handleBookService = (service: ServiceDTO) => {
+  const handleBookService = (service: Service) => {
     setSelectedService(service)
     setShowBookingFlow(true)
   }
