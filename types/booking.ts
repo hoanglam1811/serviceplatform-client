@@ -22,16 +22,23 @@ export interface Booking {
 }
 
 export interface BookingRequest {
+  userId: string
   serviceId: string
-  scheduledDate: Date
-  scheduledTime: string
-  requirements?: string
-  notes?: string
+  startTime: Date
+  endTime: Date
+  status: string
+  paymentStatus: string
+  note?: string
 }
 
 export interface CreateBookingDTO {
-  userId: string;
-  serviceId: string;
+  userId: string
+  serviceId: string
+  startTime: Date
+  endTime: Date
+  status: string
+  paymentStatus: string
+  note?: string
 }
 
 export interface UpdateBookingDTO {

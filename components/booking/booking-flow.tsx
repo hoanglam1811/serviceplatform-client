@@ -11,6 +11,7 @@ import { CalendarDays, Clock, CreditCard, CheckCircle } from "lucide-react"
 import type { Service, ServiceDTO } from "@/types/service"
 import type { BookingRequest } from "@/types/booking"
 import { useAuth } from "@/contexts/auth-context"
+import { createBooking } from "@/services/bookingService"
 
 interface BookingFlowProps {
   service: Service
@@ -22,13 +23,13 @@ interface BookingFlowProps {
 type BookingStep = "datetime" | "details" | "payment" | "confirmation"
 
 export function BookingFlow({ service, isOpen, onClose, onBookingComplete }: BookingFlowProps) {
-  const { user } = useAuth()
   const [currentStep, setCurrentStep] = useState<BookingStep>("datetime")
   const [selectedDate, setSelectedDate] = useState<Date>()
   const [selectedTime, setSelectedTime] = useState<string>("")
   const [requirements, setRequirements] = useState("")
   const [notes, setNotes] = useState("")
   const [isProcessing, setIsProcessing] = useState(false)
+  const { user } = useAuth();
 
   // Generate available time slots
   const timeSlots = [
@@ -69,13 +70,22 @@ export function BookingFlow({ service, isOpen, onClose, onBookingComplete }: Boo
     await new Promise((resolve) => setTimeout(resolve, 2000))
 
     // Create booking
+    if(!user) return
+      
+    const [hours, minutes] = selectedTime.split(":").map(Number);
+    selectedDate!.setHours(hours, minutes, 0, 0);
+
     const bookingRequest: BookingRequest = {
+      userId: user.id,
       serviceId: service.id,
-      scheduledDate: selectedDate!,
-      scheduledTime: selectedTime,
-      requirements,
-      notes,
+      startTime: selectedDate!,
+      endTime: selectedDate!,
+      status: "Pending",
+      paymentStatus: "Pending",
+      note: notes,
     }
+    //console.log(bookingRequest);
+    await createBooking(bookingRequest)
 
     // Mock booking creation
     const bookingId = `booking_${Date.now()}`
