@@ -11,7 +11,7 @@ import { BookingFlow } from "../booking/booking-flow"
 import type { Service, ServiceDTO } from "@/types/service"
 import type { Booking } from "@/types/booking"
 import { useAuth } from "@/contexts/auth-context"
-import UserProfile from "@/app/user-profile/page"
+import CustomerProfile from "@/app/customer-profile/page"
 
 // Mock booking data
 const mockBookings: Booking[] = [
@@ -74,7 +74,6 @@ export function CustomerDashboard() {
 
   return (
     <div className="space-y-6">
-      {/* Stats Overview */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -217,7 +216,7 @@ export function CustomerDashboard() {
               <CardTitle>My Profile</CardTitle>
             </CardHeader>
             <CardContent>
-              <UserProfile />
+              <CustomerProfile />
             </CardContent>
           </Card>
         </TabsContent>

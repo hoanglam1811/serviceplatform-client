@@ -11,6 +11,7 @@ import { BookingManagement } from "../booking/booking-management"
 import { type Service } from "@/types/service"
 import { useAuth } from "@/contexts/auth-context"
 import { createService, getAllServicesByUserId, updateService } from "@/services/serviceService"
+import ProviderProfile from "@/app/provider-profile/page"
 
 
 export function ProviderDashboard() {
@@ -20,26 +21,26 @@ export function ProviderDashboard() {
   const [editingService, setEditingService] = useState<Service | null>(null)
 
   const fetchServices = async () => {
-    try{
-      const res= await getAllServicesByUserId(user?.id || "")
+    try {
+      const res = await getAllServicesByUserId(user?.id || "")
       const services: Service[] = res.data;
       setServices(services)
-      
+
     }
-    catch(err){
+    catch (err) {
       console.log(err)
     }
-    finally{
+    finally {
 
     }
   }
 
   const handleSaveService = async (serviceData: Partial<Service>) => {
-    
+
     if (editingService) {
-      
+
       // Update existing service
-      if(!serviceData.id) return;
+      if (!serviceData.id) return;
       await updateService(serviceData.id, serviceData as any)
       /*setServices(
         services.map((service) =>
@@ -203,17 +204,7 @@ export function ProviderDashboard() {
               <CardTitle>Provider Profile</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                <div>
-                  <h4 className="font-medium mb-2">Profile Information</h4>
-                  <p className="text-sm text-gray-600">Name: {user?.name}</p>
-                  <p className="text-sm text-gray-600">Email: {user?.email}</p>
-                  <p className="text-sm text-gray-600">Member since: {user?.createdAt?.toLocaleDateString()}</p>
-                </div>
-                <div className="text-center py-8 text-gray-500">
-                  <p>Profile editing features coming soon!</p>
-                </div>
-              </div>
+              <ProviderProfile />
             </CardContent>
           </Card>
         </TabsContent>

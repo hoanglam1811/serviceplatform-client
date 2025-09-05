@@ -3,9 +3,9 @@
 import { useAuth } from "@/contexts/auth-context"
 import { DashboardHeader } from "@/components/dashboard/dashboard-header"
 import { ProviderDashboard } from "@/components/provider/provider-dashboard"
-import { CustomerDashboard } from "@/components/customer/customer-dashboard"
 import { useRouter } from "next/navigation"
 import { useEffect } from "react"
+import { CustomerDashboard } from "@/components/customer/customer-dashboard"
 
 export default function DashboardPage() {
   const { user, isLoading, isAuthenticated } = useAuth()

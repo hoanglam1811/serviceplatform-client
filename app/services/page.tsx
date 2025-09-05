@@ -17,7 +17,6 @@ export default function ServicesPage() {
 
   const handleBookingComplete = (bookingId: string) => {
     console.log("Booking completed:", bookingId)
-    // In a real app, you'd handle the booking completion
   }
 
   return (

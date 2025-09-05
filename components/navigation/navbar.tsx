@@ -40,7 +40,7 @@ export function Navbar() {
           <div className="flex items-center space-x-4">
             {isAuthenticated && user ? (
               <>
-                <Link href="/dashboard">
+                <Link href="/user-dashboard">
                   <Button variant="ghost" size="sm">
                     <User className="w-4 h-4 mr-2" />
                     Dashboard

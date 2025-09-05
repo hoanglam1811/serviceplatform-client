@@ -2,10 +2,10 @@
 import { useEffect, useState } from "react";
 import { getUserById, updateUser } from "@/services/userService";
 import { useToast } from "@/hooks/use-toast";
-import UserProfileForm from "./UserProfileForm";
+import UserProfileForm from "./CustomerProfileForm";
 import { useAuth } from "@/contexts/auth-context";
 
-export default function UserProfile() {
+export default function CustomerProfile() {
     const { user } = useAuth();
     const [userData, setUserData] = useState<any>(null);
     const { toast } = useToast();
