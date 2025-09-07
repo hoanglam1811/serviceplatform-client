@@ -7,7 +7,7 @@ export interface ServiceDTO {
   categoryDTO?: ServiceCategoryDTO
   price: number
   duration: string
-  images: string[]
+  images: string[] | File[]
   tags: string[]
   isActive: boolean
   createdAt: Date

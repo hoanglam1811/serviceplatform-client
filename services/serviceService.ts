@@ -3,7 +3,24 @@ import api from "./api";
 
 // CREATE
 export const createService = async (dto: CreateServiceDTO) => {
-  const res = await api.post("/service", dto);
+  
+  const formData = new FormData();
+
+  for (const key in dto) {
+    if(key == "images"){
+      for(const image of dto.images){
+        formData.append("images", image);
+      }
+    }
+    else if(dto.hasOwnProperty(key)) {
+      formData.append(key, dto[key]);
+    }
+  }
+  const res = await api.post("/service", formData,{
+	header: {
+		"Content-Type": "multipart/form-data"
+	}
+  });
   return res.data;
 };
 

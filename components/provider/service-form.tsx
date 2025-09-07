@@ -10,20 +10,21 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { X } from "lucide-react"
+import { X, Loader2 } from "lucide-react"
 import type { Service, ServiceCategory } from "@/types/service"
 import { getAllCategories } from "@/services/serviceCategoryService"
 import { motion } from "framer-motion"
 
 interface ServiceFormProps {
   service?: Service
-  onSave: (serviceData: Partial<Service>) => void
+  onSave: (serviceData: Partial<Service>) => Promise<void>
   onCancel: () => void
 }
 
 export function ServiceForm({ service, onSave, onCancel }: ServiceFormProps) {
   const [categories, setCategories] = useState<ServiceCategory[] | null>(null);
 
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     id: service?.id || "",
     name: service?.name || "",
@@ -58,9 +59,11 @@ export function ServiceForm({ service, onSave, onCancel }: ServiceFormProps) {
     })
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    onSave(formData)
+    setLoading(true)
+    await onSave(formData)
+    setLoading(false)
   }
 
   const fetchCategories = async () => {
@@ -284,7 +287,7 @@ export function ServiceForm({ service, onSave, onCancel }: ServiceFormProps) {
                 />
                 <Button type="button" onClick={handleAddTag} variant="outline" className="rounded-xl">
                   Add
-                </Button>
+		 </Button>
               </div>
               <motion.div layout className="flex flex-wrap gap-2">
                 {formData.tags.map((tag) => (
@@ -310,9 +313,14 @@ export function ServiceForm({ service, onSave, onCancel }: ServiceFormProps) {
             <div className="flex gap-3 pt-6">
               <Button
                 type="submit"
+		disabled={loading}
                 className="flex-1 rounded-xl bg-gradient-to-r bg-black text-white shadow-lg hover:shadow-indigo-500/50 hover:scale-105 transition"
               >
-                {service ? "Update Service" : "Create Service"}
+	     	 {loading && (
+		   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+	         )}
+	         {loading ? "Please wait..." : 
+                 (service ? "Update Service" : "Create Service")}
               </Button>
               <Button
                 type="button"
