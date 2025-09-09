@@ -13,11 +13,11 @@ export const createService = async (dto: CreateServiceDTO) => {
       }
     }
     else if(dto.hasOwnProperty(key)) {
-      formData.append(key, dto[key]);
+      formData.append(key, (dto as any)[key]);
     }
   }
   const res = await api.post("/service", formData,{
-	header: {
+	headers: {
 		"Content-Type": "multipart/form-data"
 	}
   });
@@ -44,7 +44,23 @@ export const getServiceById = async (id: string) => {
 
 // UPDATE
 export const updateService = async (id: string, dto: UpdateServiceDTO) => {
-  const res = await api.put(`/service/${id}`, dto);
+  const formData = new FormData();
+
+  for (const key in dto) {
+    if(key == "images"){
+      for(const image of dto.images){
+        formData.append("images", image);
+      }
+    }
+    else if(dto.hasOwnProperty(key)) {
+      formData.append(key, (dto as any)[key]);
+    }
+  }
+  const res = await api.put(`/service/${id}`, formData,{
+	headers: {
+		"Content-Type": "multipart/form-data"
+	}
+  });
   return res.data;
 };
 

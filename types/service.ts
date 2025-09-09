@@ -115,6 +115,7 @@ export interface CreateServiceDTO {
   discountPrice: number;
   status: string;
   imageUrl: string;
+  images: string[] | File[];
 }
 
 export interface UpdateServiceDTO {
@@ -130,4 +131,5 @@ export interface UpdateServiceDTO {
   discountPrice: number;
   status: string;
   imageUrl: string;
+  images: string[] | File[];
 }

@@ -329,7 +329,7 @@ function ServiceBrowseCard({ service, categories,  onViewDetails, onBook }: Serv
     <Card className="py-0 pb-6 hover:shadow-lg transition-shadow cursor-pointer" onClick={onViewDetails}>
       <div className="aspect-video bg-gray-100 rounded-t-lg overflow-hidden">
         <img
-          src={service.imageUrl || "/placeholder.svg?height=200&width=300&query=service placeholder"}
+          src={service?.imageUrl?.split(", ")[0] || "/placeholder.svg?height=200&width=300&query=service placeholder"}
           alt={service.name}
           className="w-full h-full object-cover"
         />
