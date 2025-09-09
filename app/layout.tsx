@@ -5,6 +5,7 @@ import { GeistMono } from "geist/font/mono"
 import "@/app/globals.css"
 import { AuthProvider } from "@/contexts/auth-context"
 import { ThemeProvider } from "next-themes"
+import { App as AntdApp } from "antd"
 
 export const metadata: Metadata = {
   title: "ServiceHub",
@@ -21,8 +22,13 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${GeistSans.variable} ${GeistMono.variable} antialiased`}>
         <AuthProvider>
-          <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
-            {children}
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="light"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <AntdApp>{children}</AntdApp>
           </ThemeProvider>
         </AuthProvider>
       </body>

@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { useAuth } from "@/contexts/auth-context"
+import { notification } from "antd"
 
 interface LoginFormProps {
   onToggleMode: () => void
@@ -18,19 +19,36 @@ export function LoginForm({ onToggleMode }: LoginFormProps) {
   const [password, setPassword] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
+  const { user } = useAuth()
   const { login } = useAuth()
+
+  console.log(user)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
     setError("")
-    console.log(process.env.BE_API_URL);
-    
+    console.log(process.env.BE_API_URL)
 
     const success = await login(email, password)
-    if (!success) {
+
+    if (success) {
+      if (user && user.status == "Verified") {
+        notification.success({
+          message: "Login Successful",
+          description: "Welcome back! 🎉",
+          placement: "topRight",
+        })
+      }
+    } else {
       setError("Invalid email or password")
+      notification.error({
+        message: "Login Failed",
+        description: "Invalid email or password. Please try again.",
+        placement: "topRight",
+      })
     }
+
     setIsLoading(false)
   }
 

@@ -38,7 +38,7 @@ export function Navbar() {
           </div>
 
           <div className="flex items-center space-x-4">
-            {isAuthenticated && user ? (
+            {isAuthenticated && user && user.status !== "Pending" ? (
               <>
                 <Link href="/user-dashboard">
                   <Button variant="ghost" size="sm">

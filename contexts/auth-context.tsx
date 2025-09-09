@@ -21,24 +21,6 @@ interface AuthContextType extends AuthState {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
-// Mock users for demonstration
-const mockUsers: User[] = [
-  {
-    id: "1",
-    email: "provider@example.com",
-    name: "John Provider",
-    role: "Provider",
-    createdAt: new Date(),
-  },
-  {
-    id: "2",
-    email: "customer@example.com",
-    name: "Jane Customer",
-    role: "Customer",
-    createdAt: new Date(),
-  },
-]
-
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [authState, setAuthState] = useState<AuthState>({
     user: null,
@@ -47,7 +29,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   })
 
   useEffect(() => {
-    // Check for stored user on mount
     const storedUser = localStorage.getItem("user")
     if (storedUser) {
       const user = JSON.parse(storedUser)
