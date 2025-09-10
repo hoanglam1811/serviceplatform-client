@@ -38,15 +38,17 @@ export function Navbar() {
           </div>
 
           <div className="flex items-center space-x-4">
-            {isAuthenticated && user && user.status !== "Pending" ? (
+            {isAuthenticated && user ? (
               <>
-                <Link href="/user-dashboard">
-                  <Button variant="ghost" size="sm">
-                    <User className="w-4 h-4 mr-2" />
-                    Dashboard
-                  </Button>
-                </Link>
-                
+                {user.status !== "Pending" &&
+                  <Link href="/user-dashboard">
+                    <Button variant="ghost" size="sm">
+                      <User className="w-4 h-4 mr-2" />
+                      Dashboard
+                    </Button>
+                  </Link>
+                }
+
                 <Button variant="ghost" size="sm" onClick={logout}>
                   <LogOut className="w-4 h-4 mr-2" />
                   Logout

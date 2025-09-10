@@ -25,20 +25,7 @@ const { TextArea } = Input;
 const AdminBookingManagementDashboard = () => {
     const [bookings, setBookings] = useState<Booking[]>([]);
     const [loading, setLoading] = useState(false);
-    const [isCreateOpen, setIsCreateOpen] = useState(false);
-    const [isDeleteOpen, setIsDeleteOpen] = useState(false);
-    const [selectedId, setSelectedId] = useState<string | null>(null);
-    const [form, setForm] = useState<CreateBookingDTO>({
-        userId: "",
-        serviceId: "",
-        startTime: new Date(),
-        endTime: new Date(),
-        status: "pending",
-        paymentStatus: "pending",
-        note: "",
-    });
 
-    // Load all bookings
     useEffect(() => {
         loadBookings();
     }, []);

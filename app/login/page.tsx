@@ -24,6 +24,9 @@ export default function LoginPage() {
         description: "Failed to login. You have to wait for admin's approval",
       })
     }
+    else if (isAuthenticated && user){
+      router.push("/user-dashboard")
+    }
   }, [isAuthenticated, user, router])
 
   if (isLoading) {
