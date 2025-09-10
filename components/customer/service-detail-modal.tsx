@@ -6,6 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Star, Clock, User, Calendar } from "lucide-react"
 import type { Service, ServiceDTO } from "@/types/service"
 import { serviceCategories } from "@/types/service"
+import CarouselWithThumbs from "../customized/carousel/carousel-09"
 
 interface ServiceDetailModalProps {
   service: Service
@@ -24,13 +25,8 @@ export function ServiceDetailModal({ service, onClose, onBook }: ServiceDetailMo
         </DialogHeader>
 
         <div className="space-y-6">
-          {/* Service Image */}
-          <div className="aspect-video bg-gray-100 rounded-lg overflow-hidden">
-            <img
-              src={service.imageUrl || "/placeholder.svg?height=300&width=500&query=service detail image"}
-              alt={service.name}
-              className="w-full h-full object-cover"
-            />
+          <div className="max-w-xl flex justify-center">
+            {service?.imageUrl && <CarouselWithThumbs images={service?.imageUrl?.split(", ")}/>}
           </div>
 
           {/* Service Info */}

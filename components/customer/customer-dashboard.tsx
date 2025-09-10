@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
@@ -12,50 +12,12 @@ import type { Service, ServiceDTO } from "@/types/service"
 import type { Booking } from "@/types/booking"
 import { useAuth } from "@/contexts/auth-context"
 import CustomerProfile from "@/app/customer-profile/page"
+import { getBookingByUserId } from "@/services/bookingService"
 
-// Mock booking data
-const mockBookings: Booking[] = [
-  {
-    id: "1",
-    serviceId: "1",
-    customerId: "2",
-    providerId: "1",
-    serviceTitle: "Professional Logo Design",
-    providerName: "John Provider",
-    customerName: "Jane Customer",
-    status: "completed",
-    bookingDate: new Date("2024-01-15"),
-    scheduledDate: new Date("2024-01-18"),
-    scheduledTime: "10:00",
-    completionDate: new Date("2024-01-18"),
-    price: 150,
-    paymentStatus: "paid",
-    rating: 5,
-    createdAt: new Date("2024-01-15"),
-    updatedAt: new Date("2024-01-18"),
-  },
-  {
-    id: "2",
-    serviceId: "3",
-    customerId: "2",
-    providerId: "3",
-    serviceTitle: "Content Writing & Copywriting",
-    providerName: "Jane Writer",
-    customerName: "Jane Customer",
-    status: "in-progress",
-    bookingDate: new Date("2024-01-20"),
-    scheduledDate: new Date("2024-01-22"),
-    scheduledTime: "14:00",
-    price: 75,
-    paymentStatus: "paid",
-    createdAt: new Date("2024-01-20"),
-    updatedAt: new Date("2024-01-20"),
-  },
-]
 
 export function CustomerDashboard() {
   const { user } = useAuth()
-  const [bookings, setBookings] = useState<Booking[]>(mockBookings)
+  const [bookings, setBookings] = useState<Booking[]>([])
   const [selectedService, setSelectedService] = useState<Service | null>(null)
   const [showBookingFlow, setShowBookingFlow] = useState(false)
 
@@ -70,7 +32,27 @@ export function CustomerDashboard() {
 
   const completedBookings = bookings.filter((booking) => booking.status === "completed")
   const activeBookings = bookings.filter((booking) => booking.status !== "completed")
-  const totalSpent = bookings.reduce((sum, booking) => sum + booking.price, 0)
+  const totalSpent = bookings.reduce((sum, booking) => sum + booking.service.discountPrice, 0)
+
+  const fetchData = async () => {
+    try{
+      if(!user) return
+      const [bookings]= await Promise.all([
+        getBookingByUserId(user.id),
+      ]) 
+      setBookings(bookings.data)
+    }
+    catch(err){
+      console.log(err)
+    }
+    finally{
+
+    }
+  }
+
+  useEffect(() => {
+    fetchData()
+  }, [])
 
   return (
     <div className="space-y-6">
@@ -147,8 +129,8 @@ export function CustomerDashboard() {
                     <div key={booking.id} className="border rounded-lg p-4">
                       <div className="flex items-start justify-between mb-2">
                         <div>
-                          <h4 className="font-semibold">{booking.serviceTitle}</h4>
-                          <p className="text-sm text-gray-600">by {booking.providerName}</p>
+                          <h4 className="font-semibold">{booking.service.name}</h4>
+                          <p className="text-sm text-gray-600">by {booking.service.userId}</p>
                         </div>
                         <Badge
                           variant={
@@ -165,19 +147,19 @@ export function CustomerDashboard() {
                       <div className="flex items-center gap-4 text-sm text-gray-600 mb-3">
                         <div className="flex items-center gap-1">
                           <Calendar className="h-4 w-4" />
-                          <span>Scheduled: {booking.scheduledDate.toLocaleDateString()}</span>
+                          <span>Scheduled: {booking.startTime.toLocaleDateString()}</span>
                         </div>
                         <div className="flex items-center gap-1">
                           <Clock className="h-4 w-4" />
-                          <span>{booking.scheduledTime}</span>
+                          <span>{booking.endTime.toLocaleDateString()}</span>
                         </div>
-                        <div className="font-semibold text-green-600">${booking.price}</div>
+                        <div className="font-semibold text-green-600">${booking.service.discountPrice}</div>
                       </div>
-                      {booking.status === "completed" && booking.rating && (
+                      {booking.status === "completed" && 5 && (
                         <div className="flex items-center gap-1 text-sm">
                           <span>Your rating:</span>
                           <div className="flex items-center gap-1 text-yellow-600">
-                            {[...Array(booking.rating)].map((_, i) => (
+                            {[...Array(5)].map((_, i) => (
                               <Star key={i} className="h-4 w-4 fill-current" />
                             ))}
                           </div>
