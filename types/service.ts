@@ -52,8 +52,6 @@ export interface CreateServiceCategoryDTO {
   name: string
   description: string
   icon: string
-  createdAt: Date
-  updatedAt: Date
 }
 
 export interface UpdateServiceCategoryDTO {
@@ -61,8 +59,6 @@ export interface UpdateServiceCategoryDTO {
   name: string
   description: string
   icon: string
-  createdAt: Date
-  updatedAt: Date
 }
 
 export const serviceCategories: ServiceCategoryDTO[] = [
