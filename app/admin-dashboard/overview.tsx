@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Textarea } from "@/components/ui/textarea";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import AdminSidebar from "./sidebar";
+import { notification } from "antd";
 
 type UserItem = {
     id: string;
@@ -37,7 +38,6 @@ export default function AdminOverviewDashboard() {
     const [query, setQuery] = useState("");
     const [processingId, setProcessingId] = useState<string | null>(null);
 
-    // state cho reject modal
     const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
     const [rejectReason, setRejectReason] = useState("");
     const [selectedUser, setSelectedUser] = useState<{ id: string; role: "Customer" | "Provider" } | null>(null);
@@ -52,7 +52,6 @@ export default function AdminOverviewDashboard() {
     const currentUsers = currentList.slice(indexOfFirstUser, indexOfLastUser);
 
     const totalPages = Math.ceil(currentList.length / usersPerPage);
-    const [activePage, setActivePage] = useState("overview");
 
     useEffect(() => {
         const load = async () => {
@@ -65,10 +64,9 @@ export default function AdminOverviewDashboard() {
                 setProviders(resProv?.data ?? []);
             } catch (err) {
                 console.error(err);
-                toast({
-                    title: "Error",
+                notification.error({
+                    message: "Error",
                     description: "Failed to load users.",
-                    variant: "destructive",
                 });
             } finally {
                 setLoading(false);
@@ -118,18 +116,17 @@ export default function AdminOverviewDashboard() {
                 prev.map((p) => (p.id === id ? { ...p, status: "Verified" } : p))
             );
 
-            toast({
-                title: "Approved",
+            notification.success({
+                message: "Approved",
                 description: "User approved successfully. They will be notified.",
             });
 
             return resp.data;
         } catch (err: any) {
             console.error(err);
-            toast({
-                title: "Error",
+            notification.error({
+                message: "Error",
                 description: "Failed to update status. Try again.",
-                variant: "destructive",
             });
             throw err;
         } finally {
@@ -154,8 +151,8 @@ export default function AdminOverviewDashboard() {
                 p.id === id ? { ...p, status: "Verified" } : p
             )
         );
-        toast({
-            title: "Approved",
+        notification.success({
+            message: "Approved",
             description: "User has been approved successfully.",
         });
         setIsApproveModalOpen(false);
@@ -266,6 +263,12 @@ export default function AdminOverviewDashboard() {
 
                 {/* Table */}
                 <div className="bg-card rounded-lg shadow-sm">
+                    <div className="p-4 border-b">
+                        <h2 className="text-lg font-semibold">Pending Accounts</h2>
+                        <p className="text-sm text-muted-foreground">
+                            Danh sách các tài khoản chờ phê duyệt
+                        </p>
+                    </div>
                     <div className="overflow-x-auto">
                         <table className="w-full table-auto">
                             <thead className="text-left text-sm text-muted-foreground border-b">
@@ -404,7 +407,8 @@ export default function AdminOverviewDashboard() {
                                 )}
                             </tbody>
                         </table>
-                        <div className="flex justify-center items-center gap-2 mt-4">
+
+                        <div className="flex justify-center items-center gap-2 mt-4 mb-3">
                             <Button
                                 variant="outline"
                                 size="sm"
@@ -425,7 +429,6 @@ export default function AdminOverviewDashboard() {
                                 Next
                             </Button>
                         </div>
-
 
                         <Dialog open={isApproveModalOpen} onOpenChange={setIsApproveModalOpen}>
                             <DialogContent>

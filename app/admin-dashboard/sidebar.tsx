@@ -9,6 +9,7 @@ import {
     CalendarCheck,
     ChevronLeft,
     ChevronRight,
+    Users,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -26,6 +27,8 @@ export default function AdminSidebar({ onNavigate, activePage }: SidebarProps) {
             label: "Overview & Approvals",
             icon: <LayoutDashboard size={20} />,
         },
+        { id: "customers", label: "Customers", icon: <Users size={20} /> },
+        { id: "providers", label: "Providers", icon: <Users size={20} /> },
         {
             id: "services",
             label: "Services",
@@ -67,8 +70,8 @@ export default function AdminSidebar({ onNavigate, activePage }: SidebarProps) {
                         key={item.id}
                         onClick={() => onNavigate(item.id)}
                         className={`flex items-center gap-3 w-full px-3 py-2 rounded-lg transition ${activePage === item.id
-                                ? "bg-foreground text-white"
-                                : "text-muted-foreground hover:bg-muted/50"
+                            ? "bg-foreground text-white"
+                            : "text-muted-foreground hover:bg-muted/50"
                             }`}
                     >
                         {item.icon}
