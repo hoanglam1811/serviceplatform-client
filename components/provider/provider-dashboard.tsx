@@ -20,6 +20,7 @@ export function ProviderDashboard() {
   const [showServiceForm, setShowServiceForm] = useState(false)
   const [editingService, setEditingService] = useState<Service | null>(null)
 
+
   const fetchServices = async () => {
     try {
       const res = await getAllServicesByUserId(user?.id || "")
@@ -42,26 +43,11 @@ export function ProviderDashboard() {
       // Update existing service
       if (!serviceData.id) return;
       await updateService(serviceData.id, serviceData as any)
-      /*setServices(
-        services.map((service) =>
-          service.id === editingService.id ? { ...service, ...serviceData, updatedAt: new Date() } : service,
-        ),
-      )*/
     } else {
       // Create new service
       serviceData.userId = user?.id
       serviceData.status = "Active"
       await createService(serviceData as any)
-      /*const newService: Service = {
-        id: Date.now().toString(),
-        providerId: user?.id || "",
-        ...serviceData,
-        images: [],
-        isActive: true,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      } as Service
-      setServices([...services, newService])*/
     }
     await fetchServices()
     setShowServiceForm(false)

@@ -4,8 +4,8 @@ export interface Booking {
   id: string
   userId: string
   serviceId: string
-  startTime: Date
-  endTime: Date
+  startTime: string
+  endTime: string
   status: string
   paymentStatus: string
   note?: string

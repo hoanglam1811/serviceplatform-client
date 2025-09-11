@@ -24,6 +24,11 @@ export const getBookingByUserId = async (id: string) => {
   return res.data;
 };
 
+export const getBookingByProviderId = async (id: string) => {
+  const res = await api.get(`/booking/provider/${id}`);
+  return res.data;
+};
+
 // UPDATE
 export const updateBooking = async (id: string, dto: UpdateBookingDTO) => {
   const res = await api.put(`/booking/${id}`, dto);

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -8,59 +8,22 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Calendar, Clock, Star, MessageSquare, CheckCircle, XCircle } from "lucide-react"
 import type { Booking } from "@/types/booking"
-
-// Mock bookings for provider
-const mockProviderBookings: Booking[] = [
-  {
-    id: "1",
-    serviceId: "1",
-    customerId: "2",
-    providerId: "1",
-    serviceTitle: "Professional Logo Design",
-    providerName: "John Provider",
-    customerName: "Jane Customer",
-    status: "confirmed",
-    bookingDate: new Date("2024-01-20"),
-    scheduledDate: new Date("2024-01-25"),
-    scheduledTime: "10:00",
-    price: 150,
-    paymentStatus: "paid",
-    requirements: "Need a modern logo for tech startup, prefer blue colors",
-    createdAt: new Date("2024-01-20"),
-    updatedAt: new Date("2024-01-20"),
-  },
-  {
-    id: "2",
-    serviceId: "2",
-    customerId: "3",
-    providerId: "1",
-    serviceTitle: "Custom Website Development",
-    providerName: "John Provider",
-    customerName: "Mike Wilson",
-    status: "pending",
-    bookingDate: new Date("2024-01-21"),
-    scheduledDate: new Date("2024-01-28"),
-    scheduledTime: "14:00",
-    price: 800,
-    paymentStatus: "pending",
-    requirements: "E-commerce website with payment integration",
-    createdAt: new Date("2024-01-21"),
-    updatedAt: new Date("2024-01-21"),
-  },
-]
+import { useAuth } from "@/contexts/auth-context"
+import { getBookingByProviderId, getBookingByUserId } from "@/services/bookingService"
 
 interface BookingManagementProps {
   userRole: "provider" | "customer"
 }
 
 export function BookingManagement({ userRole }: BookingManagementProps) {
-  const [bookings] = useState<Booking[]>(mockProviderBookings)
+  const [bookings, setBookings] = useState<Booking[]>([])
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null)
   const [responseMessage, setResponseMessage] = useState("")
 
-  const pendingBookings = bookings.filter((b) => b.status === "pending")
-  const confirmedBookings = bookings.filter((b) => b.status === "confirmed")
-  const completedBookings = bookings.filter((b) => b.status === "completed")
+  const pendingBookings = bookings.filter((b) => b.status.toLowerCase() === "pending")
+  const confirmedBookings = bookings.filter((b) => b.status.toLowerCase() === "confirmed")
+  const completedBookings = bookings.filter((b) => b.status.toLowerCase() === "completed")
+  const { user } = useAuth()
 
   const handleAcceptBooking = (bookingId: string) => {
     console.log("Accepting booking:", bookingId)
@@ -93,6 +56,26 @@ export function BookingManagement({ userRole }: BookingManagementProps) {
         return "bg-gray-100 text-gray-800"
     }
   }
+
+  const fetchData = async () => {
+    try{
+      if(!user) return
+      const [bookings]= await Promise.all([
+        getBookingByProviderId(user.id),
+      ]) 
+      setBookings(bookings.data)
+    }
+    catch(err){
+      console.log(err)
+    }
+    finally{
+
+    }
+  }
+
+  useEffect(() => {
+    fetchData()
+  }, [])
 
   return (
     <div className="space-y-6">
@@ -195,6 +178,7 @@ interface BookingCardProps {
 }
 
 function BookingCard({ booking, userRole, onViewDetails, onAccept, onDecline, onComplete }: BookingCardProps) {
+  const { user } = useAuth()
   const getStatusColor = (status: string) => {
     switch (status) {
       case "pending":
@@ -217,9 +201,9 @@ function BookingCard({ booking, userRole, onViewDetails, onAccept, onDecline, on
       <CardContent className="p-6">
         <div className="flex items-start justify-between mb-4">
           <div className="flex-1">
-            <h3 className="font-semibold text-lg mb-1">{booking.serviceTitle}</h3>
+            <h3 className="font-semibold text-lg mb-1">{booking.service.name}</h3>
             <p className="text-gray-600">
-              {userRole === "provider" ? `Customer: ${booking.customerName}` : `Provider: ${booking.providerName}`}
+              {userRole === "provider" ? `Customer: ${booking.service.userId}` : `Provider: ${user?.name}`}
             </p>
           </div>
           <Badge className={getStatusColor(booking.status)}>{booking.status.replace("-", " ")}</Badge>
@@ -228,20 +212,20 @@ function BookingCard({ booking, userRole, onViewDetails, onAccept, onDecline, on
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4 text-sm">
           <div className="flex items-center gap-2">
             <Calendar className="h-4 w-4 text-gray-500" />
-            <span>{booking.scheduledDate.toLocaleDateString()}</span>
+            <span>{booking.startTime.split("T").join(" ")}</span>
           </div>
           <div className="flex items-center gap-2">
             <Clock className="h-4 w-4 text-gray-500" />
-            <span>{booking.scheduledTime}</span>
+            <span>{booking.endTime.split("T").join(" ")}</span>
           </div>
-          <div className="font-semibold text-green-600">${booking.price}</div>
+          <div className="font-semibold text-green-600">${booking.service.discountPrice}</div>
           <div className="text-gray-600">Payment: {booking.paymentStatus}</div>
         </div>
 
-        {booking.requirements && (
+        {booking.note && (
           <div className="mb-4 p-3 bg-gray-50 rounded-lg">
             <p className="text-sm">
-              <strong>Requirements:</strong> {booking.requirements}
+              <strong>Note:</strong> {booking.note}
             </p>
           </div>
         )}
@@ -252,7 +236,7 @@ function BookingCard({ booking, userRole, onViewDetails, onAccept, onDecline, on
             View Details
           </Button>
 
-          {booking.status === "pending" && userRole === "provider" && (
+          {booking.status.toLowerCase() === "pending" && userRole.toLowerCase() === "provider" && (
             <>
               <Button size="sm" onClick={onAccept}>
                 <CheckCircle className="h-4 w-4 mr-2" />
@@ -265,7 +249,7 @@ function BookingCard({ booking, userRole, onViewDetails, onAccept, onDecline, on
             </>
           )}
 
-          {booking.status === "confirmed" && userRole === "provider" && (
+          {booking.status.toLowerCase() === "confirmed" && userRole.toLowerCase() === "provider" && (
             <Button size="sm" onClick={onComplete}>
               <CheckCircle className="h-4 w-4 mr-2" />
               Mark Complete
@@ -296,10 +280,10 @@ function BookingDetailsModal({ booking, onClose, userRole }: BookingDetailsModal
             <div>
               <h4 className="font-semibold mb-2">Service Information</h4>
               <p className="text-sm mb-1">
-                <strong>Service:</strong> {booking.serviceTitle}
+                <strong>Service:</strong> {booking.service.name}
               </p>
               <p className="text-sm mb-1">
-                <strong>Price:</strong> ${booking.price}
+                <strong>Price:</strong> ${booking.service.discountPrice}
               </p>
               <p className="text-sm mb-1">
                 <strong>Status:</strong> {booking.status}
@@ -311,17 +295,17 @@ function BookingDetailsModal({ booking, onClose, userRole }: BookingDetailsModal
             <div>
               <h4 className="font-semibold mb-2">Schedule</h4>
               <p className="text-sm mb-1">
-                <strong>Date:</strong> {booking.scheduledDate.toLocaleDateString()}
+                <strong>Date:</strong> {booking?.startTime.split("T")[0]}
               </p>
               <p className="text-sm mb-1">
-                <strong>Time:</strong> {booking.scheduledTime}
+                <strong>Time:</strong> {booking?.startTime.split("T")[1]}
               </p>
               <p className="text-sm mb-1">
-                <strong>Booked:</strong> {booking.bookingDate.toLocaleDateString()}
+                <strong>Booked:</strong> {booking?.createdAt?.toLocaleDateString()}
               </p>
-              {booking.completionDate && (
+              {booking.endTime && (
                 <p className="text-sm">
-                  <strong>Completed:</strong> {booking.completionDate.toLocaleDateString()}
+                  <strong>Completed:</strong> {booking.endTime.split("T").join(" ")}
                 </p>
               )}
             </div>
@@ -330,36 +314,36 @@ function BookingDetailsModal({ booking, onClose, userRole }: BookingDetailsModal
           <div>
             <h4 className="font-semibold mb-2">{userRole === "provider" ? "Customer" : "Provider"} Information</h4>
             <p className="text-sm">
-              <strong>Name:</strong> {userRole === "provider" ? booking.customerName : booking.providerName}
+              <strong>Name:</strong> {userRole === "provider" ? booking.userId : booking.service.userId}
             </p>
           </div>
 
-          {booking.requirements && (
+          {/*booking.note && (
             <div>
               <h4 className="font-semibold mb-2">Requirements</h4>
-              <p className="text-sm bg-gray-50 p-3 rounded-lg">{booking.requirements}</p>
+              <p className="text-sm bg-gray-50 p-3 rounded-lg">{booking.note}</p>
             </div>
-          )}
+          )*/}
 
-          {booking.notes && (
+          {booking.note && (
             <div>
               <h4 className="font-semibold mb-2">Additional Notes</h4>
-              <p className="text-sm bg-gray-50 p-3 rounded-lg">{booking.notes}</p>
+              <p className="text-sm bg-gray-50 p-3 rounded-lg">{booking.note}</p>
             </div>
           )}
 
-          {booking.status === "completed" && booking.rating && (
+          {booking.status.toLowerCase() === "completed" && 5 && (
             <div>
               <h4 className="font-semibold mb-2">Rating & Review</h4>
               <div className="flex items-center gap-2 mb-2">
                 <div className="flex items-center gap-1 text-yellow-600">
-                  {[...Array(booking.rating)].map((_, i) => (
+                  {[...Array(5)].map((_, i) => (
                     <Star key={i} className="h-4 w-4 fill-current" />
                   ))}
                 </div>
-                <span className="text-sm">({booking.rating}/5)</span>
+                <span className="text-sm">({5}/5)</span>
               </div>
-              {booking.review && <p className="text-sm bg-gray-50 p-3 rounded-lg">{booking.review}</p>}
+              {<p className="text-sm bg-gray-50 p-3 rounded-lg">{"Good service"}</p>}
             </div>
           )}
         </div>

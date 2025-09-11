@@ -147,15 +147,15 @@ export function CustomerDashboard() {
                       <div className="flex items-center gap-4 text-sm text-gray-600 mb-3">
                         <div className="flex items-center gap-1">
                           <Calendar className="h-4 w-4" />
-                          <span>Scheduled: {booking.startTime.toLocaleDateString()}</span>
+                          <span>Scheduled: {booking.startTime.split("T").join(" ")}</span>
                         </div>
                         <div className="flex items-center gap-1">
                           <Clock className="h-4 w-4" />
-                          <span>{booking.endTime.toLocaleDateString()}</span>
+                          <span>{booking.endTime.split("T").join(" ")}</span>
                         </div>
                         <div className="font-semibold text-green-600">${booking.service.discountPrice}</div>
                       </div>
-                      {booking.status === "completed" && 5 && (
+                      {booking.status.toLowerCase() === "completed" && 5 && (
                         <div className="flex items-center gap-1 text-sm">
                           <span>Your rating:</span>
                           <div className="flex items-center gap-1 text-yellow-600">
