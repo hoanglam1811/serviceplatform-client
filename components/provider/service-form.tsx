@@ -272,6 +272,16 @@ export function ServiceForm({ service, onSave, onCancel }: ServiceFormProps) {
 
               {/* Preview */}
               <div className="mt-2 grid grid-cols-3 gap-2">
+                {formData.images.length == 0 && 
+                  service?.imageUrl.split(", ").map((url, idx) => (
+                    <img
+                      key={idx}
+                      src={url}
+                      alt={`Preview ${idx}`}
+                      className="h-32 w-full rounded-lg object-cover shadow"
+                    />
+                  ))
+                }
                 {formData.images.map((file, idx) => (
                   <img
                     key={idx}
