@@ -33,7 +33,7 @@ export function ServiceForm({ service, onSave, onCancel }: ServiceFormProps) {
     serviceArea: service?.serviceArea || "",
     originalPrice: service?.originalPrice || 0,
     discountPrice: service?.discountPrice || 0,
-    duration: service?.duration || "",
+    duration: service?.duration || 0,
     status: service?.status || "Active",
     images: [] as File[],
     categoryId: service?.categoryId || "",
@@ -124,8 +124,8 @@ export function ServiceForm({ service, onSave, onCancel }: ServiceFormProps) {
               />
             </div>
 
-            {/* Category + Price */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Category + Price */}
               <div className="space-y-2">
                 <Label className="text-xs font-medium uppercase tracking-wide text-slate-500">Category</Label>
                 <Select
@@ -138,43 +138,52 @@ export function ServiceForm({ service, onSave, onCancel }: ServiceFormProps) {
                   <SelectContent>
                     {categories?.map((category) => (
                       <SelectItem key={category.id} value={category.id}>
-                        {category.icon} {category.name}
+                        <div className="flex items-center gap-2">
+                          {category.icon ? (
+                            <img
+                              src={category.icon}
+                              alt={category.name}
+                              className="w-5 h-5 object-contain rounded"
+                            />
+                          ) : (
+                            <span className="w-5 h-5 inline-block bg-gray-200 rounded" />
+                          )}
+                          <span>{category.name}</span>
+                        </div>
                       </SelectItem>
+
                     ))}
                   </SelectContent>
                 </Select>
               </div>
-
+              {/* Duration */}
               <div className="space-y-2">
-                <Label className="text-xs font-medium uppercase tracking-wide text-slate-500">Price ($)</Label>
-                <Input
-                  type="number"
-                  min="1"
-                  value={formData.discountPrice}
-                  onChange={(e) => setFormData({ ...formData, discountPrice: Number(e.target.value) })}
-                  required
-                  className="rounded-xl focus:ring-2 focus:ring-indigo-500 transition"
-                />
+                <Label className="text-xs font-medium uppercase tracking-wide text-slate-500">
+                  Duration
+                </Label>
+                <div className="flex items-center gap-2">
+                  <Input
+                    type="number"
+                    min={1}
+                    value={formData.duration}
+                    onChange={(e) =>
+                      setFormData({ ...formData, duration: Number(e.target.value) })
+                    }
+                    required
+                    className="rounded-xl focus:ring-2 focus:ring-indigo-500 transition w-24"
+                  />
+                  <span className="text-sm text-slate-600">phút</span>
+                </div>
               </div>
             </div>
 
-            {/* Duration */}
-            <div className="space-y-2">
-              <Label className="text-xs font-medium uppercase tracking-wide text-slate-500">Duration</Label>
-              <Input
-                type="text"
-                value={formData.duration}
-                onChange={(e) => setFormData({ ...formData, duration: e.target.value })}
-                required
-                className="rounded-xl focus:ring-2 focus:ring-indigo-500 transition"
-              />
-            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Status */}
               <div className="space-y-2">
                 <Label className="text-xs uppercase text-slate-500">Status</Label>
                 <Select
+                  disabled
                   value={formData.status}
                   onValueChange={(value) => setFormData({ ...formData, status: value })}
                 >
@@ -287,7 +296,7 @@ export function ServiceForm({ service, onSave, onCancel }: ServiceFormProps) {
                 />
                 <Button type="button" onClick={handleAddTag} variant="outline" className="rounded-xl">
                   Add
-		 </Button>
+                </Button>
               </div>
               <motion.div layout className="flex flex-wrap gap-2">
                 {formData.tags.map((tag) => (
@@ -313,14 +322,14 @@ export function ServiceForm({ service, onSave, onCancel }: ServiceFormProps) {
             <div className="flex gap-3 pt-6">
               <Button
                 type="submit"
-		disabled={loading}
+                disabled={loading}
                 className="flex-1 rounded-xl bg-gradient-to-r bg-black text-white shadow-lg hover:shadow-indigo-500/50 hover:scale-105 transition"
               >
-	     	 {loading && (
-		   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-	         )}
-	         {loading ? "Please wait..." : 
-                 (service ? "Update Service" : "Create Service")}
+                {loading && (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                )}
+                {loading ? "Please wait..." :
+                  (service ? "Update Service" : "Create Service")}
               </Button>
               <Button
                 type="button"

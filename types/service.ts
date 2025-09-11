@@ -27,7 +27,7 @@ export interface Service {
   name: string
   description: string
   type: string
-  duration: string
+  duration: number
   serviceArea: string
   originalPrice: number
   discountPrice: number

@@ -16,7 +16,7 @@ interface ServiceCardProps {
 }
 
 export function ServiceCard({ service, onEdit, onDelete, onToggleActive }: ServiceCardProps) {
-  
+
 
   return (
     <Card className={`${service?.status?.toLowerCase() != "active" ? "opacity-60" : ""}`}>
@@ -25,33 +25,68 @@ export function ServiceCard({ service, onEdit, onDelete, onToggleActive }: Servi
           <div className="flex-1">
             <CardTitle className="text-lg">{service.name}</CardTitle>
             <div className="flex items-center gap-2 mt-1">
-              <Badge variant="outline">
-                {service.category?.icon} {service.category?.name} 
+              <Badge variant="outline" className="flex items-center gap-2">
+                {service.category?.icon ? (
+                  <img
+                    src={service.category.icon}
+                    alt={service.category.name}
+                    className="w-4 h-4 object-contain rounded"
+                  />
+                ) : (
+                  <span className="w-4 h-4 inline-block bg-gray-200 rounded" />
+                )}
+                <span>{service.category?.name}</span>
               </Badge>
-              <Badge variant={service?.status?.toLowerCase() == "active" ? "default" : "secondary"}>
+
+              <Badge
+                variant={service?.status?.toLowerCase() == "active" ? "default" : "secondary"}
+              >
                 {service.status}
               </Badge>
             </div>
           </div>
           <div className="flex gap-1">
+            {/* Toggle Active/Inactive */}
             <Button size="sm" variant="ghost" onClick={() => onToggleActive(service.id)}>
-              {service.status.toLowerCase() == "active" ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              {service.status?.toLowerCase() === "active" ? (
+                <EyeOff className="h-4 w-4 text-gray-600" />
+              ) : (
+                <Eye className="h-4 w-4 text-gray-600" />
+              )}
             </Button>
+
+            {/* Edit */}
             <Button size="sm" variant="ghost" onClick={() => onEdit(service)}>
               <Edit className="h-4 w-4" />
             </Button>
+
+            {/* Delete → thực ra là Deactivate với modal */}
             <Button size="sm" variant="ghost" onClick={() => onDelete(service.id)}>
-              <Trash2 className="h-4 w-4" />
+              <Trash2 className="h-4 w-4 text-red-500" />
             </Button>
           </div>
+
         </div>
       </CardHeader>
+
+      {/* Show hình ảnh của service */}
+      {service.imageUrl && (
+        <div className="px-4">
+          <img
+            src={service.imageUrl}
+            alt={service.name}
+            className="w-full h-40 object-cover rounded-lg mb-3"
+          />
+        </div>
+      )}
+
       <CardContent>
         <p className="text-sm text-gray-600 mb-3 line-clamp-2">{service.description}</p>
         <div className="flex items-center justify-between text-sm">
           <span className="font-semibold text-green-600">${service.discountPrice}</span>
           <span className="text-gray-500">{service.duration}</span>
         </div>
+
         {service?.tags?.length > 0 && (
           <div className="flex flex-wrap gap-1 mt-3">
             {service.tags.slice(0, 3).map((tag) => (

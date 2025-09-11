@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Calendar, Clock, Star, ShoppingBag } from "lucide-react"
+import { Calendar, Clock, Star, ShoppingBag, Plus, ArrowDownCircle, ArrowUpCircle } from "lucide-react"
 import { ServiceBrowser } from "./service-browser"
 import { BookingFlow } from "../booking/booking-flow"
 import type { Service, ServiceDTO } from "@/types/service"
@@ -13,6 +13,8 @@ import type { Booking } from "@/types/booking"
 import { useAuth } from "@/contexts/auth-context"
 import CustomerProfile from "@/app/customer-profile/page"
 import { getBookingByUserId } from "@/services/bookingService"
+import { notification } from "antd"
+import { createWallet, getWalletByUserId } from "@/services/walletService"
 
 
 export function CustomerDashboard() {
@@ -20,6 +22,7 @@ export function CustomerDashboard() {
   const [bookings, setBookings] = useState<Booking[]>([])
   const [selectedService, setSelectedService] = useState<Service | null>(null)
   const [showBookingFlow, setShowBookingFlow] = useState(false)
+  const [wallet, setWallet] = useState<any | null>(null)
 
   const handleBookService = (service: Service) => {
     setSelectedService(service)
@@ -30,29 +33,61 @@ export function CustomerDashboard() {
     console.log("Booking completed:", bookingId)
   }
 
+  const fetchWallet = async () => {
+    try {
+      const res = await getWalletByUserId(user?.id || "")
+      setWallet(res.data)
+    } catch (err) {
+      console.log("No wallet yet")
+      setWallet(null)
+    }
+  }
+
+  const handleCreateWallet = async () => {
+    try {
+      const res = await createWallet({
+        userId: user?.id,
+        balance: 0,
+      })
+      setWallet(res.data)
+      notification.success({
+        message: "Success",
+        description: "Wallet created successfully!",
+      })
+    } catch (err) {
+      notification.error({
+        message: "Error",
+        description: "Failed to create wallet",
+      })
+    }
+  }
+
   const completedBookings = bookings.filter((booking) => booking.status === "completed")
   const activeBookings = bookings.filter((booking) => booking.status !== "completed")
   const totalSpent = bookings.reduce((sum, booking) => sum + booking.service.discountPrice, 0)
 
   const fetchData = async () => {
-    try{
-      if(!user) return
-      const [bookings]= await Promise.all([
+    try {
+      if (!user) return
+      const [bookings] = await Promise.all([
         getBookingByUserId(user.id),
-      ]) 
+      ])
       setBookings(bookings.data)
     }
-    catch(err){
+    catch (err) {
       console.log(err)
     }
-    finally{
+    finally {
 
     }
   }
 
   useEffect(() => {
-    fetchData()
-  }, [])
+    if (user?.id) {
+      fetchData()
+      fetchWallet()
+    }
+  }, [user?.id])
 
   return (
     <div className="space-y-6">
@@ -106,6 +141,7 @@ export function CustomerDashboard() {
           <TabsTrigger value="bookings">My Bookings</TabsTrigger>
           <TabsTrigger value="favorites">Favorites</TabsTrigger>
           <TabsTrigger value="profile">My Profile</TabsTrigger>
+          <TabsTrigger value="wallet">My Wallet</TabsTrigger>
         </TabsList>
 
         <TabsContent value="browse" className="space-y-4">
@@ -201,6 +237,86 @@ export function CustomerDashboard() {
               <CustomerProfile />
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="wallet" className="space-y-6">
+          {/* Balance Card */}
+          <Card className="border border-gray-200 shadow-sm rounded-2xl">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base font-medium text-gray-700">
+                My Wallet
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="flex flex-col items-center justify-center py-8">
+              {wallet ? (
+                <div className="text-center space-y-6">
+                  <div>
+                    <h3 className="text-4xl font-bold tracking-tight text-gray-900">
+                      {wallet.balance.toLocaleString()} ₫
+                    </h3>
+
+                  </div>
+                  <div className="flex gap-3 justify-center">
+                    <Button
+                      variant="outline"
+                      className="rounded-xl"
+                      onClick={() => console.log("Deposit")}
+                    >
+                      <ArrowUpCircle className="h-4 w-4 mr-2" />
+                      Nạp tiền
+                    </Button>
+                    <Button
+                      variant="outline"
+                      className="rounded-xl"
+                      onClick={() => console.log("Withdraw")}
+                    >
+                      <ArrowDownCircle className="h-4 w-4 mr-2" />
+                      Rút tiền
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center space-y-4">
+                  <p className="text-gray-500 text-sm">
+                    Bạn chưa có ví. Hãy tạo ví để bắt đầu quản lý số dư của bạn.
+                  </p>
+                  <Button
+                    className="rounded-xl"
+                    onClick={handleCreateWallet}
+                  >
+                    <Plus className="h-4 w-4 mr-2" /> Tạo ví
+                  </Button>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Transactions */}
+          {wallet && (
+            <Card className="border border-gray-200 shadow-sm rounded-2xl">
+              <CardHeader>
+                <CardTitle className="text-base font-medium text-gray-700">
+                  Recent Transactions
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ul className="divide-y divide-gray-100 text-sm">
+                  <li className="flex justify-between py-3">
+                    <span className="text-gray-700">Nạp tiền</span>
+                    <span className="text-green-600 font-medium">+500,000 ₫</span>
+                  </li>
+                  <li className="flex justify-between py-3">
+                    <span className="text-gray-700">Rút tiền</span>
+                    <span className="text-red-600 font-medium">-200,000 ₫</span>
+                  </li>
+                  <li className="flex justify-between py-3">
+                    <span className="text-gray-700">Thanh toán dịch vụ</span>
+                    <span className="text-red-600 font-medium">-150,000 ₫</span>
+                  </li>
+                </ul>
+              </CardContent>
+            </Card>
+          )}
         </TabsContent>
       </Tabs>
 

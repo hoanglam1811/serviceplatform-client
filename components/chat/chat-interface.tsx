@@ -116,7 +116,7 @@ export function ChatInterface() {
       {/* Conversations Sidebar */}
       <div className="w-80 border-r bg-card">
         <div className="p-4 border-b">
-          <Link href="/dashboard" className="">
+          <Link href="/user-dashboard" className="">
             <Button variant="ghost" className="font-semibold mb-3"><ArrowLeft className="w-4 h-4 mr-2" /> Back</Button>
           </Link>
           <h2 className="text-lg font-semibold mb-3">Messages</h2>

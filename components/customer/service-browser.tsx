@@ -26,24 +26,24 @@ export function ServiceBrowser({ onBookService }: ServiceBrowserProps) {
   const [categories, setCategories] = useState<ServiceCategory[] | null>(null);
 
   const fetchData = async () => {
-    try{
-      const [services, categories]= await Promise.all([
+    try {
+      const [services, categories] = await Promise.all([
         getAllServices(),
         getAllCategories()
-      ]) 
+      ])
       setServices(services.data)
       setCategories(categories.data)
     }
-    catch(err){
+    catch (err) {
       console.log(err)
     }
-    finally{
+    finally {
 
     }
   }
 
   const filteredServices = useMemo(() => {
-    if(!services || !categories) return [];
+    if (!services || !categories) return [];
     let filtered = services.filter((service) => service.status.toLowerCase() == "active")
 
     // Search filter
@@ -85,7 +85,7 @@ export function ServiceBrowser({ onBookService }: ServiceBrowserProps) {
         filtered.sort((a, b) => b.discountPrice - a.discountPrice)
         break
       case "duration":
-        filtered.sort((a, b) => Number(a.duration.split(" ")[0]) - Number(b.duration.split(" ")[0]))
+        filtered.sort((a, b) => a.duration - b.duration)
         break
       default:
         filtered.sort((a, b) => b?.createdAt?.getTime() - a?.createdAt?.getTime())
@@ -96,7 +96,7 @@ export function ServiceBrowser({ onBookService }: ServiceBrowserProps) {
 
   useEffect(() => {
     fetchData()
-    
+
   }, [])
 
   return (
@@ -227,7 +227,7 @@ interface ServiceBrowseCardProps {
   onBook: () => void
 }
 
-function ServiceBrowseCard({ service, categories,  onViewDetails, onBook }: ServiceBrowseCardProps) {
+function ServiceBrowseCard({ service, categories, onViewDetails, onBook }: ServiceBrowseCardProps) {
   const category = categories.find((cat) => cat.id === service.category.id)
 
   return (
@@ -247,9 +247,19 @@ function ServiceBrowseCard({ service, categories,  onViewDetails, onBook }: Serv
             <span>4.9</span>
           </div>
         </div>
-        <Badge variant="outline" className="w-fit">
-          {category?.icon} {category?.name}
+        <Badge variant="outline" className="w-fit flex items-center gap-2">
+          {category?.icon ? (
+            <img
+              src={category.icon}
+              alt={category.name}
+              className="w-4 h-4 object-contain rounded"
+            />
+          ) : (
+            <span className="w-4 h-4 inline-block bg-gray-200 rounded" />
+          )}
+          <span>{category?.name}</span>
         </Badge>
+
       </CardHeader>
       <CardContent className="pt-0">
         <p className="text-sm text-gray-600 mb-4 line-clamp-2">{service.description}</p>
@@ -257,7 +267,7 @@ function ServiceBrowseCard({ service, categories,  onViewDetails, onBook }: Serv
         <div className="flex items-center justify-between text-sm mb-4">
           <div className="flex items-center gap-1 text-gray-500">
             <Clock className="h-4 w-4" />
-            <span>{service.duration}</span>
+            <span>{service.duration} minutes</span>
           </div>
           <div className="flex items-center gap-1 font-semibold text-green-600">
             <DollarSign className="h-4 w-4" />
