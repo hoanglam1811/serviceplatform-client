@@ -346,6 +346,9 @@ interface BookingDetailsModalProps {
 function BookingDetailsModal({ booking, onClose, userRole }: BookingDetailsModalProps) {
   const fixedRating = 4
   const fixedReview = "Good service, will book again!"
+
+  const { user } = useAuth();
+
   return (
     <Dialog open={true} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl">
@@ -425,6 +428,10 @@ function BookingDetailsModal({ booking, onClose, userRole }: BookingDetailsModal
                 {userRole === "provider" ? booking.userId : booking.service.userId}
               </span>
             </div>
+            <h4 className="font-semibold mb-2">{userRole === "provider" ? "Customer" : "Provider"} Information</h4>
+            <p className="text-sm">
+              <strong>Name:</strong> {userRole === "provider" ? user?.name : booking.user?.fullName}
+            </p>
           </div>
 
           {/* Additional Notes */}

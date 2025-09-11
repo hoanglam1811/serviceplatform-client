@@ -262,8 +262,7 @@ function ServiceBrowseCard({ service, categories, onViewDetails, onBook }: Servi
         <Badge variant="outline" className="w-fit flex items-center gap-2">
           {category?.icon ? (
             <img
-              src={category.icon}
-              alt={category.name}
+              src={category?.icon}
               className="w-4 h-4 object-contain rounded"
             />
           ) : (

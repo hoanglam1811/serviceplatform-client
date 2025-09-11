@@ -28,8 +28,7 @@ export function ServiceCard({ service, onEdit, onDelete, onToggleActive }: Servi
               <Badge variant="outline" className="flex items-center gap-2">
                 {service.category?.icon ? (
                   <img
-                    src={service.category.icon}
-                    alt={service.category.name}
+                    src={service.category?.icon}
                     className="w-4 h-4 object-contain rounded"
                   />
                 ) : (
@@ -73,7 +72,7 @@ export function ServiceCard({ service, onEdit, onDelete, onToggleActive }: Servi
       {service.imageUrl && (
         <div className="px-4">
           <img
-            src={service.imageUrl}
+            src={service.imageUrl.split(", ")[0]}
             alt={service.name}
             className="w-full h-40 object-cover rounded-lg mb-3"
           />

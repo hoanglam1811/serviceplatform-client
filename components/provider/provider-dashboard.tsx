@@ -34,7 +34,6 @@ export function ProviderDashboard() {
   const fetchServices = async () => {
     try {
       const res = await getAllServicesByUserId(user?.id || "")
-      console.log(res)
       setServices(res.data as Service[])
     } catch (err) {
       console.log(err)
