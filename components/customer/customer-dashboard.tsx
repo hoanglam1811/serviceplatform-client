@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Calendar, Clock, Star, ShoppingBag, Plus, ArrowDownCircle, ArrowUpCircle } from "lucide-react"
+import { Calendar, Clock, Star, ShoppingBag, Plus, ArrowDownCircle, ArrowUpCircle, Wallet } from "lucide-react"
 import { ServiceBrowser } from "./service-browser"
 import { BookingFlow } from "../booking/booking-flow"
 import type { Service, ServiceDTO } from "@/types/service"
@@ -15,6 +15,7 @@ import CustomerProfile from "@/app/customer-profile/page"
 import { getBookingByUserId } from "@/services/bookingService"
 import { notification } from "antd"
 import { createWallet, getWalletByUserId } from "@/services/walletService"
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "../ui/dialog"
 
 
 export function CustomerDashboard() {
@@ -23,6 +24,7 @@ export function CustomerDashboard() {
   const [selectedService, setSelectedService] = useState<Service | null>(null)
   const [showBookingFlow, setShowBookingFlow] = useState(false)
   const [wallet, setWallet] = useState<any | null>(null)
+  const [openConfirm, setOpenConfirm] = useState(false)
 
   const handleBookService = (service: Service) => {
     setSelectedService(service)
@@ -250,27 +252,14 @@ export function CustomerDashboard() {
             <CardContent className="flex flex-col items-center justify-center py-8">
               {wallet ? (
                 <div className="text-center space-y-6">
-                  <div>
-                    <h3 className="text-4xl font-bold tracking-tight text-gray-900">
-                      {wallet.balance.toLocaleString()} ₫
-                    </h3>
-
-                  </div>
+                  <h3 className="text-4xl font-bold tracking-tight text-gray-900">
+                    {wallet.balance.toLocaleString()} ₫
+                  </h3>
                   <div className="flex gap-3 justify-center">
-                    <Button
-                      variant="outline"
-                      className="rounded-xl"
-                      onClick={() => console.log("Deposit")}
-                    >
-                      <ArrowUpCircle className="h-4 w-4 mr-2" />
+                    <Button variant="outline" className="rounded-xl">
                       Nạp tiền
                     </Button>
-                    <Button
-                      variant="outline"
-                      className="rounded-xl"
-                      onClick={() => console.log("Withdraw")}
-                    >
-                      <ArrowDownCircle className="h-4 w-4 mr-2" />
+                    <Button variant="outline" className="rounded-xl">
                       Rút tiền
                     </Button>
                   </div>
@@ -282,41 +271,47 @@ export function CustomerDashboard() {
                   </p>
                   <Button
                     className="rounded-xl"
-                    onClick={handleCreateWallet}
+                    onClick={() => setOpenConfirm(true)}
                   >
-                    <Plus className="h-4 w-4 mr-2" /> Tạo ví
+                    <Wallet className="h-4 w-4 mr-2" /> Tạo ví
                   </Button>
                 </div>
               )}
             </CardContent>
           </Card>
 
-          {/* Transactions */}
-          {wallet && (
-            <Card className="border border-gray-200 shadow-sm rounded-2xl">
-              <CardHeader>
-                <CardTitle className="text-base font-medium text-gray-700">
-                  Recent Transactions
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ul className="divide-y divide-gray-100 text-sm">
-                  <li className="flex justify-between py-3">
-                    <span className="text-gray-700">Nạp tiền</span>
-                    <span className="text-green-600 font-medium">+500,000 ₫</span>
-                  </li>
-                  <li className="flex justify-between py-3">
-                    <span className="text-gray-700">Rút tiền</span>
-                    <span className="text-red-600 font-medium">-200,000 ₫</span>
-                  </li>
-                  <li className="flex justify-between py-3">
-                    <span className="text-gray-700">Thanh toán dịch vụ</span>
-                    <span className="text-red-600 font-medium">-150,000 ₫</span>
-                  </li>
-                </ul>
-              </CardContent>
-            </Card>
-          )}
+          {/* Modal xác nhận tạo ví */}
+          <Dialog open={openConfirm} onOpenChange={setOpenConfirm}>
+            <DialogContent className="sm:max-w-md rounded-2xl shadow-2xl">
+              <DialogHeader>
+                <DialogTitle className="text-xl font-bold text-gray-900">
+                  Xác nhận tạo ví
+                </DialogTitle>
+              </DialogHeader>
+              <div className="space-y-3 text-gray-600">
+                <p>Bạn có chắc chắn muốn tạo ví mới không?</p>
+                <p>Số dư khởi tạo: <span className="font-semibold text-gray-900">0 ₫</span></p>
+              </div>
+              <DialogFooter className="flex justify-end gap-2">
+                <Button
+                  variant="outline"
+                  onClick={() => setOpenConfirm(false)}
+                  className="rounded-xl"
+                >
+                  Hủy
+                </Button>
+                <Button
+                  onClick={() => {
+                    handleCreateWallet()
+                    setOpenConfirm(false)
+                  }}
+                  className="rounded-xl bg-blue-600 text-white"
+                >
+                  Xác nhận
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         </TabsContent>
       </Tabs>
 

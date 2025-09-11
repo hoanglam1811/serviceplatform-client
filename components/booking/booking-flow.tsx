@@ -122,7 +122,7 @@ export function BookingFlow({ service, isOpen, onClose, onBookingComplete, fetch
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
+          <DialogTitle className="flex items-center gap-2 mb-5">
             <CalendarDays className="h-5 w-5" />
             Book Service: {service.name}
           </DialogTitle>

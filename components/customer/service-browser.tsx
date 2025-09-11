@@ -135,10 +135,22 @@ export function ServiceBrowser({ onBookService }: ServiceBrowserProps) {
                   <SelectItem value="all">All Categories</SelectItem>
                   {categories?.map((category) => (
                     <SelectItem key={category.id} value={category.id}>
-                      {category.icon} {category.name}
+                      <div className="flex items-center gap-2">
+                        {category.icon ? (
+                          <img
+                            src={category.icon}
+                            alt={category.name}
+                            className="w-5 h-5 object-contain rounded"
+                          />
+                        ) : (
+                          <span className="w-5 h-5 bg-gray-200 rounded" />
+                        )}
+                        <span>{category.name}</span>
+                      </div>
                     </SelectItem>
                   ))}
                 </SelectContent>
+
               </Select>
             </div>
 
