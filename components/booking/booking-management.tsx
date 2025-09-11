@@ -203,7 +203,7 @@ function BookingCard({ booking, userRole, onViewDetails, onAccept, onDecline, on
           <div className="flex-1">
             <h3 className="font-semibold text-lg mb-1">{booking.service.name}</h3>
             <p className="text-gray-600">
-              {userRole === "provider" ? `Customer: ${booking.service.userId}` : `Provider: ${user?.name}`}
+              {userRole === "provider" ? `Customer: ${booking.user?.fullName}` : `Provider: ${user?.name}`}
             </p>
           </div>
           <Badge className={getStatusColor(booking.status)}>{booking.status.replace("-", " ")}</Badge>

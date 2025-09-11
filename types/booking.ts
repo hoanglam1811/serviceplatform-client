@@ -1,4 +1,5 @@
 import { Service } from "./service"
+import { UserDTO } from "./user"
 
 export interface Booking {
   id: string
@@ -12,6 +13,7 @@ export interface Booking {
   createdAt: Date
   updatedAt: Date
   service: Service
+  user?: UserDTO
 }
 
 export interface BookingRequest {

@@ -130,7 +130,7 @@ export function CustomerDashboard() {
                       <div className="flex items-start justify-between mb-2">
                         <div>
                           <h4 className="font-semibold">{booking.service.name}</h4>
-                          <p className="text-sm text-gray-600">by {booking.service.userId}</p>
+                          <p className="text-sm text-gray-600">by {booking.user?.fullName}</p>
                         </div>
                         <Badge
                           variant={
@@ -213,6 +213,7 @@ export function CustomerDashboard() {
             setShowBookingFlow(false)
             setSelectedService(null)
           }}
+          fetchData={fetchData}
           onBookingComplete={handleBookingComplete}
         />
       )}

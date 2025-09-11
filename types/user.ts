@@ -8,6 +8,23 @@ export interface User {
   createdAt: Date
 }
 
+export interface UserDTO {
+  id: string
+  username: string
+	fullName: string
+	role: string
+	avatarUrl: string
+	email: string
+	phoneNumber: string
+	gender: string
+	nationalId: string
+	address: string
+	bio: string
+	status: string
+	createdAt: string
+	updatedAt: string
+}
+
 export interface AuthState {
   user: User | null
   isLoading: boolean

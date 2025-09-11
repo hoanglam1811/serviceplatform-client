@@ -18,11 +18,12 @@ interface BookingFlowProps {
   isOpen: boolean
   onClose: () => void
   onBookingComplete: (bookingId: string) => void
+  fetchData: () => Promise<void>
 }
 
 type BookingStep = "datetime" | "details" | "payment" | "confirmation"
 
-export function BookingFlow({ service, isOpen, onClose, onBookingComplete }: BookingFlowProps) {
+export function BookingFlow({ service, isOpen, onClose, onBookingComplete, fetchData }: BookingFlowProps) {
   const [currentStep, setCurrentStep] = useState<BookingStep>("datetime")
   const [selectedDate, setSelectedDate] = useState<Date>()
   const [selectedTime, setSelectedTime] = useState<string>("")
@@ -92,6 +93,8 @@ export function BookingFlow({ service, isOpen, onClose, onBookingComplete }: Boo
 
     setIsProcessing(false)
     setCurrentStep("confirmation")
+
+    fetchData()
 
     // Complete booking after showing confirmation
     setTimeout(() => {
