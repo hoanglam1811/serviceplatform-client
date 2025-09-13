@@ -12,6 +12,7 @@ import type { Service, ServiceDTO } from "@/types/service"
 import type { BookingRequest } from "@/types/booking"
 import { useAuth } from "@/contexts/auth-context"
 import { createBooking } from "@/services/bookingService"
+import { notification } from "antd"
 
 interface BookingFlowProps {
   service: Service
@@ -33,26 +34,26 @@ export function BookingFlow({ service, isOpen, onClose, onBookingComplete, fetch
   const { user } = useAuth();
 
   // Generate available time slots
-  const timeSlots = [
-    "09:00",
-    "09:30",
-    "10:00",
-    "10:30",
-    "11:00",
-    "11:30",
-    "12:00",
-    "12:30",
-    "13:00",
-    "13:30",
-    "14:00",
-    "14:30",
-    "15:00",
-    "15:30",
-    "16:00",
-    "16:30",
-    "17:00",
-    "17:30",
-  ]
+  const generateTimeSlots = (start: string, end: string, interval: number = 30) => {
+    const slots: string[] = []
+    let [hour, minute] = start.split(":").map(Number)
+    const [endHour, endMinute] = end.split(":").map(Number)
+
+    while (hour < endHour || (hour === endHour && minute <= endMinute)) {
+      slots.push(
+        `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`
+      )
+      minute += interval
+      if (minute >= 60) {
+        minute = 0
+        hour++
+      }
+    }
+    return slots
+  }
+
+  const timeSlots = generateTimeSlots("06:00", "23:30")
+  console.log(timeSlots)
 
   const handleDateTimeNext = () => {
     if (selectedDate && selectedTime) {
@@ -67,41 +68,54 @@ export function BookingFlow({ service, isOpen, onClose, onBookingComplete, fetch
   const handlePayment = async () => {
     setIsProcessing(true)
 
-    // Simulate payment processing
-    await new Promise((resolve) => setTimeout(resolve, 2000))
+    try {
+      await new Promise((resolve) => setTimeout(resolve, 2000))
+      if (!user) return
 
-    // Create booking
-    if(!user) return
-      
-    const [hours, minutes] = selectedTime.split(":").map(Number);
-    selectedDate!.setHours(hours, minutes, 0, 0);
+      const [hours, minutes] = selectedTime.split(":").map(Number)
+      const startDate = new Date(selectedDate!)
+      startDate.setHours(hours, minutes, 0, 0)
 
-    const bookingRequest: BookingRequest = {
-      userId: user.id,
-      serviceId: service.id,
-      startTime: selectedDate!,
-      endTime: selectedDate!,
-      status: "Pending",
-      paymentStatus: "Pending",
-      note: notes,
+      const endDate = new Date(startDate)
+      endDate.setMinutes(endDate.getMinutes() + service.duration)
+
+      const bookingRequest: BookingRequest = {
+        userId: user.id,
+        serviceId: service.id,
+        startTime: startDate,
+        endTime: endDate,
+        status: "Pending",
+        paymentStatus: "Pending",
+        note: notes,
+      }
+
+      await createBooking(bookingRequest)
+
+      const bookingId = `booking_${Date.now()}`
+      setIsProcessing(false)
+      setCurrentStep("confirmation")
+
+      notification.success({
+        message: "Booking Confirmed",
+        description: `Your booking for "${service.name}" is confirmed on ${startDate.toLocaleDateString()} at ${selectedTime}.`,
+      })
+
+      fetchData()
+
+      setTimeout(() => {
+        onBookingComplete(bookingId)
+        onClose()
+        resetFlow()
+      }, 3000)
+    } catch (error) {
+      console.error(error)
+      setIsProcessing(false)
+
+      notification.error({
+        message: "Payment Failed",
+        description: "There was an issue processing your booking. Please try again.",
+      })
     }
-    //console.log(bookingRequest);
-    await createBooking(bookingRequest)
-
-    // Mock booking creation
-    const bookingId = `booking_${Date.now()}`
-
-    setIsProcessing(false)
-    setCurrentStep("confirmation")
-
-    fetchData()
-
-    // Complete booking after showing confirmation
-    setTimeout(() => {
-      onBookingComplete(bookingId)
-      onClose()
-      resetFlow()
-    }, 3000)
   }
 
   const resetFlow = () => {
@@ -139,13 +153,12 @@ export function BookingFlow({ service, isOpen, onClose, onBookingComplete, fetch
             ].map((step, index) => (
               <div key={step.key} className="flex items-center">
                 <div
-                  className={`flex items-center justify-center w-8 h-8 rounded-full ${
-                    currentStep === step.key
-                      ? "bg-blue-600 text-white"
-                      : index < ["datetime", "details", "payment", "confirmation"].indexOf(currentStep)
-                        ? "bg-green-600 text-white"
-                        : "bg-gray-200 text-gray-600"
-                  }`}
+                  className={`flex items-center justify-center w-8 h-8 rounded-full ${currentStep === step.key
+                    ? "bg-blue-600 text-white"
+                    : index < ["datetime", "details", "payment", "confirmation"].indexOf(currentStep)
+                      ? "bg-green-600 text-white"
+                      : "bg-gray-200 text-gray-600"
+                    }`}
                 >
                   <step.icon className="h-4 w-4" />
                 </div>

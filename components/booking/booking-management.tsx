@@ -5,12 +5,13 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Calendar, Clock, Star, MessageSquare, CheckCircle, XCircle, User } from "lucide-react"
 import type { Booking } from "@/types/booking"
 import { useAuth } from "@/contexts/auth-context"
-import { getBookingByProviderId, getBookingByUserId } from "@/services/bookingService"
+import { getBookingByProviderId, getBookingByUserId, updateBookingStatus } from "@/services/bookingService"
 import dayjs from "dayjs"
+import { Input, notification } from "antd"
 
 interface BookingManagementProps {
   userRole: "provider" | "customer"
@@ -28,17 +29,14 @@ export function BookingManagement({ userRole }: BookingManagementProps) {
 
   const handleAcceptBooking = (bookingId: string) => {
     console.log("Accepting booking:", bookingId)
-    // Update booking status logic here
   }
 
   const handleDeclineBooking = (bookingId: string) => {
     console.log("Declining booking:", bookingId)
-    // Update booking status logic here
   }
 
   const handleCompleteBooking = (bookingId: string) => {
     console.log("Completing booking:", bookingId)
-    // Update booking status logic here
   }
 
   const getStatusColor = (status: string) => {
@@ -70,7 +68,6 @@ export function BookingManagement({ userRole }: BookingManagementProps) {
       console.log(err)
     }
     finally {
-
     }
   }
 
@@ -180,6 +177,13 @@ interface BookingCardProps {
 
 function BookingCard({ booking, userRole, onViewDetails, onAccept, onDecline, onComplete }: BookingCardProps) {
   const { user } = useAuth()
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false)
+  const [isDeclineModalOpen, setIsDeclineModalOpen] = useState(false)
+  const [declineReason, setDeclineReason] = useState("")
+  const [currentBooking, setCurrentBooking] = useState(booking)
+  const [agreeConfirmTerms, setAgreeConfirmTerms] = useState(false)
+  const [agreeDeclineTerms, setAgreeDeclineTerms] = useState(false)
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case "pending":
@@ -194,6 +198,42 @@ function BookingCard({ booking, userRole, onViewDetails, onAccept, onDecline, on
         return "bg-red-100 text-red-800"
       default:
         return "bg-gray-100 text-gray-800"
+    }
+  }
+
+  const handleConfirm = async () => {
+    try {
+      await updateBookingStatus(currentBooking.id, "confirmed")
+      setCurrentBooking({ ...currentBooking, status: "confirmed" }) // cập nhật tại chỗ
+      notification.success({
+        message: "Booking Confirmed",
+        description: "You have successfully confirmed this booking.",
+      })
+      setIsConfirmModalOpen(false)
+    } catch (error) {
+      notification.error({
+        message: "Error",
+        description: "Failed to confirm booking.",
+      })
+    }
+  }
+
+  // ❌ Decline booking
+  const handleDecline = async () => {
+    try {
+      await updateBookingStatus(currentBooking.id, "cancelled")
+      setCurrentBooking({ ...currentBooking, status: "cancelled" })
+      notification.success({
+        message: "Booking Declined",
+        description: declineReason || "You have declined this booking.",
+      })
+      setIsDeclineModalOpen(false)
+      setDeclineReason("")
+    } catch (error) {
+      notification.error({
+        message: "Error",
+        description: "Failed to decline booking.",
+      })
     }
   }
 
@@ -290,28 +330,25 @@ function BookingCard({ booking, userRole, onViewDetails, onAccept, onDecline, on
             View Details
           </Button>
 
-          {booking.status.toLowerCase() === "pending" &&
-            userRole.toLowerCase() === "provider" && (
-              <>
-                <Button
-                  size="sm"
-                  className="rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm"
-                  onClick={onAccept}
-                >
-                  <CheckCircle className="h-4 w-4 mr-2" />
-                  Accept
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="rounded-lg border-red-300 text-red-600 hover:bg-red-50"
-                  onClick={onDecline}
-                >
-                  <XCircle className="h-4 w-4 mr-2" />
-                  Decline
-                </Button>
-              </>
-            )}
+          {currentBooking.status === "Pending" && userRole === "provider" && (
+            <div className="flex gap-3">
+              <Button
+                size="sm"
+                className="rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm"
+                onClick={() => setIsConfirmModalOpen(true)}
+              >
+                Confirm
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="rounded-lg border-red-300 text-red-600 hover:bg-red-50"
+                onClick={() => setIsDeclineModalOpen(true)}
+              >
+                Decline
+              </Button>
+            </div>
+          )}
 
           {booking.status.toLowerCase() === "confirmed" &&
             userRole.toLowerCase() === "provider" && (
@@ -325,6 +362,96 @@ function BookingCard({ booking, userRole, onViewDetails, onAccept, onDecline, on
               </Button>
             )}
         </div>
+
+        <Dialog open={isConfirmModalOpen} onOpenChange={setIsConfirmModalOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Confirm Booking</DialogTitle>
+              <DialogDescription>
+                Vui lòng đọc kỹ điều khoản trước khi xác nhận:
+                <ul className="list-disc ml-5 mt-2 text-sm text-gray-600 space-y-1">
+                  <li>Việc xác nhận đồng nghĩa bạn cam kết cung cấp dịch vụ đúng thời gian đã đặt.</li>
+                  <li>Hủy sau khi đã xác nhận có thể ảnh hưởng đến uy tín và bị phạt.</li>
+                  <li>Khách hàng có quyền đánh giá chất lượng dịch vụ sau khi hoàn tất.</li>
+                </ul>
+              </DialogDescription>
+            </DialogHeader>
+
+            {/* Checkbox đồng ý */}
+            <div className="flex items-center gap-2 mt-4">
+              <input
+                type="checkbox"
+                id="confirmTerms"
+                checked={agreeConfirmTerms}
+                onChange={(e) => setAgreeConfirmTerms(e.target.checked)}
+                className="h-4 w-4"
+              />
+              <label htmlFor="confirmTerms" className="text-sm text-gray-700">
+                Tôi đồng ý với các điều khoản & nội quy
+              </label>
+            </div>
+
+            <DialogFooter>
+              <Button variant="ghost" onClick={() => setIsConfirmModalOpen(false)}>
+                Cancel
+              </Button>
+              <Button
+                onClick={handleConfirm}
+                disabled={!agreeConfirmTerms}
+              >
+                Confirm
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        <Dialog open={isDeclineModalOpen} onOpenChange={setIsDeclineModalOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Decline Booking</DialogTitle>
+              <DialogDescription>
+                Vui lòng nhập lý do từ chối (nếu có) và đồng ý với điều khoản:
+                <ul className="list-disc ml-5 mt-2 text-sm text-gray-600 space-y-1">
+                  <li>Từ chối phải có lý do hợp lý và thông báo sớm cho khách hàng.</li>
+                  <li>Việc từ chối nhiều lần có thể ảnh hưởng đến điểm đánh giá của bạn.</li>
+                </ul>
+              </DialogDescription>
+            </DialogHeader>
+
+            <Input.TextArea
+              rows={3}
+              placeholder="Reason for decline..."
+              value={declineReason}
+              onChange={(e) => setDeclineReason(e.target.value)}
+            />
+
+            <div className="flex items-center gap-2 mt-4">
+              <input
+                type="checkbox"
+                id="declineTerms"
+                checked={agreeDeclineTerms}
+                onChange={(e) => setAgreeDeclineTerms(e.target.checked)}
+                className="h-4 w-4"
+              />
+              <label htmlFor="declineTerms" className="text-sm text-gray-700">
+                Tôi đồng ý với các điều khoản & nội quy khi từ chối
+              </label>
+            </div>
+
+            <DialogFooter>
+              <Button variant="ghost" onClick={() => setIsDeclineModalOpen(false)}>
+                Cancel
+              </Button>
+              <Button
+                className="bg-red-600 text-white"
+                onClick={handleDecline}
+                disabled={!agreeDeclineTerms}
+              >
+                Decline
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </CardContent>
 
       {/* Accent bar (status color) */}

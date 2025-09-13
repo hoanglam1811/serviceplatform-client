@@ -16,6 +16,7 @@ import { getBookingByUserId } from "@/services/bookingService"
 import { notification } from "antd"
 import { createWallet, getWalletByUserId } from "@/services/walletService"
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "../ui/dialog"
+import { ProviderProfileDialog } from "./provider-profile"
 
 
 export function CustomerDashboard() {
@@ -25,6 +26,8 @@ export function CustomerDashboard() {
   const [showBookingFlow, setShowBookingFlow] = useState(false)
   const [wallet, setWallet] = useState<any | null>(null)
   const [openConfirm, setOpenConfirm] = useState(false)
+  const [selectedProvider, setSelectedProvider] = useState<any | null>(null)
+  const [openProviderDialog, setOpenProviderDialog] = useState(false)
 
   const handleBookService = (service: Service) => {
     setSelectedService(service)
@@ -151,60 +154,106 @@ export function CustomerDashboard() {
         </TabsContent>
 
         <TabsContent value="bookings" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>My Bookings</CardTitle>
+          <Card className="border border-gray-200 shadow-sm rounded-2xl overflow-hidden">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-xl font-bold text-gray-900">My Bookings</CardTitle>
+              <p className="text-sm text-gray-500">Track all your service bookings in one place</p>
             </CardHeader>
             <CardContent>
               {bookings.length === 0 ? (
-                <div className="text-center py-8 text-gray-500">
-                  <Calendar className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                  <p>No bookings yet. Browse services to get started!</p>
+                <div className="text-center py-12 text-gray-500">
+                  <Calendar className="h-14 w-14 mx-auto mb-4 opacity-40" />
+                  <p className="mb-4">No bookings yet. Browse services to get started!</p>
+                  <Button size="sm" className="rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm">
+                    Browse Services
+                  </Button>
                 </div>
               ) : (
-                <div className="space-y-4">
+                <div className="space-y-5">
                   {bookings.map((booking) => (
-                    <div key={booking.id} className="border rounded-lg p-4">
-                      <div className="flex items-start justify-between mb-2">
+                    <div
+                      key={booking.id}
+                      className="p-5 rounded-xl border bg-white shadow-sm hover:shadow-md transition-all"
+                    >
+                      {/* Header */}
+                      <div className="flex items-start justify-between mb-4">
                         <div>
-                          <h4 className="font-semibold">{booking.service.name}</h4>
-                          <p className="text-sm text-gray-600">by {booking.user?.fullName}</p>
+                          <div className="flex flex-col">
+                            <h4 className="font-semibold text-gray-900">
+                              {booking.service.name}
+                              <span
+                                className="ml-2 text-indigo-600 text-sm font-medium cursor-pointer hover:underline"
+                                onClick={() => {
+                                  setSelectedProvider(booking.user)
+                                  setOpenProviderDialog(true)
+                                }}
+                              >
+                                – Hồ sơ
+                              </span>
+                            </h4>
+                          </div>
+
+
+                          <p className="text-sm text-gray-500">
+                            <span className="font-medium">Customer:</span> {booking.user?.fullName}
+                          </p>
                         </div>
                         <Badge
-                          variant={
-                            booking.status === "completed"
-                              ? "default"
+                          className={`
+                  px-3 py-1 rounded-full text-xs font-medium shadow-sm
+                  ${booking.status === "completed"
+                              ? "bg-emerald-100 text-emerald-700"
                               : booking.status === "in-progress"
-                                ? "secondary"
-                                : "outline"
-                          }
+                                ? "bg-blue-100 text-blue-700"
+                                : "bg-gray-100 text-gray-600"
+                            }
+                `}
                         >
                           {booking.status.replace("-", " ")}
                         </Badge>
                       </div>
-                      <div className="flex items-center gap-4 text-sm text-gray-600 mb-3">
-                        <div className="flex items-center gap-1">
-                          <Calendar className="h-4 w-4" />
-                          <span>Scheduled: {booking.startTime.split("T").join(" ")}</span>
+
+                      {/* Info grid */}
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm mb-4">
+                        <div>
+                          <p className="text-xs text-gray-500 flex items-center gap-1">
+                            <Calendar className="h-3 w-3 text-gray-400" /> Start
+                          </p>
+                          <p className="font-medium text-gray-700">{booking.startTime.split("T").join(" ")}</p>
                         </div>
-                        <div className="flex items-center gap-1">
-                          <Clock className="h-4 w-4" />
-                          <span>{booking.endTime.split("T").join(" ")}</span>
+                        <div>
+                          <p className="text-xs text-gray-500 flex items-center gap-1">
+                            <Clock className="h-3 w-3 text-gray-400" /> End
+                          </p>
+                          <p className="font-medium text-gray-700">{booking.endTime.split("T").join(" ")}</p>
                         </div>
-                        <div className="font-semibold text-green-600">${booking.service.discountPrice}</div>
+                        <div>
+                          <p className="text-xs text-gray-500">Price</p>
+                          <p className="font-semibold text-emerald-600">
+                            {booking.service.discountPrice.toLocaleString()} ₫
+                          </p>
+                        </div>
                       </div>
-                      {booking.status.toLowerCase() === "completed" && 5 && (
-                        <div className="flex items-center gap-1 text-sm">
-                          <span>Your rating:</span>
-                          <div className="flex items-center gap-1 text-yellow-600">
+
+                      {/* Rating */}
+                      {booking.status.toLowerCase() === "completed" && (
+                        <div className="mb-3">
+                          <p className="text-xs text-gray-500">Your Rating</p>
+                          <div className="flex items-center gap-1 text-yellow-500">
                             {[...Array(5)].map((_, i) => (
-                              <Star key={i} className="h-4 w-4 fill-current" />
+                              <Star
+                                key={i}
+                                className={`h-4 w-4 ${i < 4 ? "fill-current" : "stroke-current"
+                                  }`} // ví dụ: 4 sao filled
+                              />
                             ))}
                           </div>
                         </div>
                       )}
+
+                      {/* Actions */}
                       {booking.status === "in-progress" && (
-                        <Button size="sm" variant="outline">
+                        <Button size="sm" variant="outline" className="rounded-lg hover:border-gray-300">
                           View Progress
                         </Button>
                       )}
@@ -214,7 +263,15 @@ export function CustomerDashboard() {
               )}
             </CardContent>
           </Card>
+
         </TabsContent>
+
+        <ProviderProfileDialog
+          open={openProviderDialog}
+          onClose={() => setOpenProviderDialog(false)}
+          provider={selectedProvider}
+        />
+
 
         <TabsContent value="favorites" className="space-y-4">
           <Card>
