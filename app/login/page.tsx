@@ -26,6 +26,10 @@ export default function LoginPage() {
     }
     else if (isAuthenticated && user){
       router.push("/user-dashboard")
+      notification.success({
+        message: "Success",
+        description: "Welcome back! 🎉",
+      })
     }
   }, [isAuthenticated, user, router])
 

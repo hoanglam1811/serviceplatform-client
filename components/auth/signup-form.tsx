@@ -11,6 +11,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { useAuth } from "@/contexts/auth-context"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select"
 import { useToast } from "../ui/use-toast"
+import { notification } from "antd"
 
 interface SignupFormProps {
   onToggleMode: () => void
@@ -82,17 +83,16 @@ export function SignupForm({ onToggleMode }: SignupFormProps) {
     )
     console.log(success);
     if (success) {
-      toast({
-        title: "🎉 Thành công!",
+      notification.success({
+        message: "🎉 Thành công!",
         description: "Vui lòng đợi admin duyệt tài khoản của bạn.",
-        duration: 3000,
+        placement: "topRight",
       })
     } else {
-      toast({
-        title: "❌ Thất bại",
+      notification.error({
+        message: "❌ Thất bại",
         description: "Tạo tài khoản không thành công, vui lòng thử lại.",
-        duration: 3000,
-        variant: "destructive",
+        placement: "topRight",
       })
     }
     setIsLoading(false)

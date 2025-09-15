@@ -13,10 +13,11 @@ import type { Booking } from "@/types/booking"
 import { useAuth } from "@/contexts/auth-context"
 import CustomerProfile from "@/app/customer-profile/page"
 import { getBookingByUserId } from "@/services/bookingService"
-import { notification } from "antd"
+import { Input, notification, Rate } from "antd"
 import { createWallet, getWalletByUserId } from "@/services/walletService"
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "../ui/dialog"
 import { ProviderProfileDialog } from "./provider-profile"
+import { createReview } from "@/services/reviewService"
 
 
 export function CustomerDashboard() {
@@ -28,6 +29,11 @@ export function CustomerDashboard() {
   const [openConfirm, setOpenConfirm] = useState(false)
   const [selectedProvider, setSelectedProvider] = useState<any | null>(null)
   const [openProviderDialog, setOpenProviderDialog] = useState(false)
+  const [rating, setRating] = useState(0)
+  const [comment, setComment] = useState("")
+  const [loading, setLoading] = useState(false)
+  const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null)
+  const [openReview, setOpenReview] = useState(false)
 
   const handleBookService = (service: Service) => {
     setSelectedService(service)
@@ -67,6 +73,41 @@ export function CustomerDashboard() {
     }
   }
 
+  const isWithin2Days = selectedBooking
+    ? new Date().getTime() - new Date(selectedBooking.endTime).getTime() <=
+    2 * 24 * 60 * 60 * 1000
+    : false
+
+  const handleSubmitReview = async () => {
+    if (!rating) {
+      notification.warning({ message: "Vui lòng chọn số sao để đánh giá" })
+      return
+    }
+    setLoading(true)
+    try {
+      await createReview({
+        bookingId: selectedBooking?.id ?? "",
+        rating,
+        comment,
+        createdAt: new Date().toISOString(),
+      })
+      await fetchData()
+      notification.success({
+        message: "🎉 Gửi feedback thành công",
+        description: "Cảm ơn bạn đã đánh giá dịch vụ!",
+      })
+      setOpenReview(false)
+      setSelectedBooking(null)
+    } catch (err) {
+      notification.error({
+        message: "❌ Thất bại",
+        description: "Không thể gửi feedback, vui lòng thử lại.",
+      })
+    } finally {
+      setLoading(false)
+    }
+  }
+
   const completedBookings = bookings.filter((booking) => booking.status === "completed")
   const activeBookings = bookings.filter((booking) => booking.status !== "completed")
   const totalSpent = bookings.reduce((sum, booking) => sum + booking.service.discountPrice, 0)
@@ -93,6 +134,13 @@ export function CustomerDashboard() {
       fetchWallet()
     }
   }, [user?.id])
+
+  useEffect(() => {
+  if (!openReview) {
+    setRating(0)
+    setComment("")
+  }
+}, [openReview])
 
   return (
     <div className="space-y-6">
@@ -244,12 +292,27 @@ export function CustomerDashboard() {
                               <Star
                                 key={i}
                                 className={`h-4 w-4 ${i < 4 ? "fill-current" : "stroke-current"
-                                  }`} // ví dụ: 4 sao filled
+                                  }`}
                               />
                             ))}
                           </div>
                         </div>
                       )}
+
+                      {booking.status.toLowerCase() === "completed" && user && user.role === "Customer" && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="rounded-lg hover:border-gray-300"
+                          onClick={() => {
+                            setSelectedBooking(booking)
+                            setOpenReview(true)
+                          }}
+                        >
+                          Đánh giá
+                        </Button>
+                      )}
+
 
                       {/* Actions */}
                       {booking.status === "in-progress" && (
@@ -263,7 +326,57 @@ export function CustomerDashboard() {
               )}
             </CardContent>
           </Card>
+          <Dialog open={openReview} onOpenChange={setOpenReview}>
+            <DialogContent className="sm:max-w-md rounded-2xl shadow-2xl">
+              <DialogHeader>
+                <DialogTitle className="text-xl font-bold text-gray-900">
+                  Đánh giá dịch vụ
+                </DialogTitle>
+              </DialogHeader>
 
+              {isWithin2Days ? (
+                <div className="space-y-4">
+                  <div>
+                    <p className="text-sm text-gray-600 mb-1">Chọn số sao</p>
+                    <Rate value={rating} onChange={setRating} />
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600 mb-1">Nhận xét</p>
+                    <Input.TextArea
+                      rows={4}
+                      placeholder="Hãy chia sẻ trải nghiệm của bạn..."
+                      value={comment}
+                      onChange={(e) => setComment(e.target.value)}
+                    />
+                  </div>
+                  <p className="text-xs text-gray-400 italic">
+                    Bạn chỉ có thể chỉnh sửa feedback trong vòng 2 ngày sau khi hoàn tất
+                    dịch vụ.
+                  </p>
+                  <DialogFooter className="flex justify-end gap-2">
+                    <Button
+                      variant="outline"
+                      onClick={() => setOpenReview(false)}
+                      className="rounded-xl"
+                    >
+                      Hủy
+                    </Button>
+                    <Button
+                      onClick={handleSubmitReview}
+                      disabled={loading}
+                      className="rounded-xl bg-emerald-600 text-white"
+                    >
+                      {loading ? "Đang gửi..." : "Gửi Review"}
+                    </Button>
+                  </DialogFooter>
+                </div>
+              ) : (
+                <div className="text-center text-gray-500 py-6">
+                  ⏳ Đã quá hạn 2 ngày để gửi feedback cho dịch vụ này.
+                </div>
+              )}
+            </DialogContent>
+          </Dialog>
         </TabsContent>
 
         <ProviderProfileDialog
@@ -271,7 +384,6 @@ export function CustomerDashboard() {
           onClose={() => setOpenProviderDialog(false)}
           provider={selectedProvider}
         />
-
 
         <TabsContent value="favorites" className="space-y-4">
           <Card>
