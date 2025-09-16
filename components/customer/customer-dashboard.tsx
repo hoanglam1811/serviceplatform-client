@@ -530,6 +530,15 @@ export function CustomerDashboard() {
           onBookingComplete={handleBookingComplete}
         />
       )}
+      <Dialog open={openPayOS} onOpenChange={setOpenPayOS} >
+        <DialogContent
+          className="max-w-full w-full h-full p-0 bg-transparent border-0 shadow-none flex items-center justify-center"
+          showCloseButton={false}
+        >
+          <div id="payos-container"
+            style={{height:"100vh", width:"100vw"}} />
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
