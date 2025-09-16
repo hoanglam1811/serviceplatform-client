@@ -96,7 +96,6 @@ export function ServiceBrowser({ onBookService }: ServiceBrowserProps) {
 
   useEffect(() => {
     fetchData()
-
   }, [])
 
   return (

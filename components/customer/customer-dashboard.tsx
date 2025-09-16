@@ -18,6 +18,8 @@ import { createWallet, getWalletByUserId } from "@/services/walletService"
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "../ui/dialog"
 import { ProviderProfileDialog } from "./provider-profile"
 import { createReview } from "@/services/reviewService"
+import { createPayOSLink } from "@/services/payOSService"
+import { PayOSConfig, usePayOS } from "payos-checkout"
 
 
 export function CustomerDashboard() {
@@ -34,6 +36,7 @@ export function CustomerDashboard() {
   const [loading, setLoading] = useState(false)
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null)
   const [openReview, setOpenReview] = useState(false)
+  const [openPayOS, setOpenPayOS] = useState(false)
 
   const handleBookService = (service: Service) => {
     setSelectedService(service)
@@ -51,6 +54,39 @@ export function CustomerDashboard() {
     } catch (err) {
       console.log("No wallet yet")
       setWallet(null)
+    }
+  }
+
+  const handlePayment = async(handlePayOS: () => Promise<void>) => {
+    try{
+      setOpenPayOS(true)
+      const res = await createPayOSLink(10000);
+      const payOSConfig: PayOSConfig = {
+        RETURN_URL: "http://localhost:3000/",
+        ELEMENT_ID:
+        "payos-container",
+        CHECKOUT_URL: res.checkoutUrl,
+        onSuccess: async (event: any) => {
+          setOpenPayOS(false)
+          await handlePayOS()
+        },
+        onExit: (event: any) => {
+          setOpenPayOS(false)
+        },
+        onCancel: async (event: any) => {
+          setOpenPayOS(false)
+          await handlePayOS()
+        },
+      }
+      
+      const { open } = usePayOS(payOSConfig);
+      open();
+    }
+    catch(error){
+
+    }
+    finally{
+
     }
   }
 
@@ -495,8 +531,18 @@ export function CustomerDashboard() {
           }}
           fetchData={fetchData}
           onBookingComplete={handleBookingComplete}
+          handlePayment={handlePayment}
         />
       )}
+      <Dialog open={openPayOS} onOpenChange={setOpenPayOS} >
+        <DialogContent
+          className="max-w-full w-full h-full p-0 bg-transparent border-0 shadow-none flex items-center justify-center"
+          showCloseButton={false}
+        >
+          <div id="payos-container"
+            style={{height:"100vh", width:"100vw"}} />
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

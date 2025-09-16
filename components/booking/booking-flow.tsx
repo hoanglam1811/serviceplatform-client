@@ -13,6 +13,8 @@ import type { BookingRequest } from "@/types/booking"
 import { useAuth } from "@/contexts/auth-context"
 import { createBooking } from "@/services/bookingService"
 import { notification } from "antd"
+import { usePayOS, PayOSConfig } from "payos-checkout";
+import { createPayOSLink } from "@/services/payOSService"
 
 interface BookingFlowProps {
   service: Service
@@ -20,11 +22,12 @@ interface BookingFlowProps {
   onClose: () => void
   onBookingComplete: (bookingId: string) => void
   fetchData: () => Promise<void>
+  handlePayment: (handlePayOS: () => Promise<void>) => void
 }
 
-type BookingStep = "datetime" | "details" | "payment" | "confirmation"
+type BookingStep = "datetime" | "details" | "payment" | "payos" | "confirmation"
 
-export function BookingFlow({ service, isOpen, onClose, onBookingComplete, fetchData }: BookingFlowProps) {
+export function BookingFlow({ service, isOpen, onClose, onBookingComplete, fetchData, handlePayment }: BookingFlowProps) {
   const [currentStep, setCurrentStep] = useState<BookingStep>("datetime")
   const [selectedDate, setSelectedDate] = useState<Date>()
   const [selectedTime, setSelectedTime] = useState<string>("")
@@ -53,7 +56,6 @@ export function BookingFlow({ service, isOpen, onClose, onBookingComplete, fetch
   }
 
   const timeSlots = generateTimeSlots("06:00", "23:30")
-  console.log(timeSlots)
 
   const handleDateTimeNext = () => {
     if (selectedDate && selectedTime) {
@@ -65,7 +67,7 @@ export function BookingFlow({ service, isOpen, onClose, onBookingComplete, fetch
     setCurrentStep("payment")
   }
 
-  const handlePayment = async () => {
+  const handlePayOS = async () => {
     setIsProcessing(true)
 
     try {
@@ -100,7 +102,7 @@ export function BookingFlow({ service, isOpen, onClose, onBookingComplete, fetch
         description: `Your booking for "${service.name}" is confirmed on ${startDate.toLocaleDateString()} at ${selectedTime}.`,
       })
 
-      fetchData()
+      await fetchData()
 
       setTimeout(() => {
         onBookingComplete(bookingId)
@@ -133,6 +135,7 @@ export function BookingFlow({ service, isOpen, onClose, onBookingComplete, fetch
   }
 
   return (
+  <>
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
@@ -326,12 +329,15 @@ export function BookingFlow({ service, isOpen, onClose, onBookingComplete, fetch
                 <Button variant="outline" onClick={() => setCurrentStep("details")}>
                   Back
                 </Button>
-                <Button onClick={handlePayment} disabled={isProcessing}>
+                <Button onClick={() => { 
+                  handlePayment(handlePayOS) 
+                }} disabled={isProcessing}>
                   {isProcessing ? "Processing..." : `Pay $${service.discountPrice}`}
                 </Button>
               </div>
             </div>
           )}
+
 
           {currentStep === "confirmation" && (
             <div className="text-center space-y-4">
@@ -356,5 +362,6 @@ export function BookingFlow({ service, isOpen, onClose, onBookingComplete, fetch
         </div>
       </DialogContent>
     </Dialog>
+  </>
   )
 }
