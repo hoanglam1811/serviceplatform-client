@@ -1,3 +1,5 @@
+import { Booking } from "./booking"
+
 export interface ReviewDTO {
     id: string
     bookingId: string
@@ -5,6 +7,7 @@ export interface ReviewDTO {
     comment?: string
     createdAt?: string
     updatedAt?: string
+    booking: Booking
 }
 
 export interface CreateReviewDTO {

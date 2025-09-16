@@ -1,3 +1,5 @@
+import { UserDTO } from "./user"
+
 export interface ServiceDTO {
   id: string
   providerId: string
@@ -37,6 +39,7 @@ export interface Service {
   createdAt: Date
   updatedAt: Date
   category: ServiceCategory
+  user: UserDTO
 }
 
 export interface ServiceCategory {

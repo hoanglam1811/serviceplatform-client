@@ -18,8 +18,8 @@ import { createWallet, getWalletByUserId } from "@/services/walletService"
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "../ui/dialog"
 import { ProviderProfileDialog } from "./provider-profile"
 import { createReview } from "@/services/reviewService"
-import { createPayOSLink } from "@/services/payOSService"
 import { PayOSConfig, usePayOS } from "payos-checkout"
+import { createPayOSLink } from "@/services/payOSService"
 
 
 export function CustomerDashboard() {
@@ -38,33 +38,20 @@ export function CustomerDashboard() {
   const [openReview, setOpenReview] = useState(false)
   const [openPayOS, setOpenPayOS] = useState(false)
 
+
   const handleBookService = (service: Service) => {
     setSelectedService(service)
     setShowBookingFlow(true)
   }
 
-  const handleBookingComplete = (bookingId: string) => {
-    console.log("Booking completed:", bookingId)
-  }
-
-  const fetchWallet = async () => {
+  const handlePayment = async (handlePayOS: () => Promise<void>) => {
     try {
-      const res = await getWalletByUserId(user?.id || "")
-      setWallet(res.data)
-    } catch (err) {
-      console.log("No wallet yet")
-      setWallet(null)
-    }
-  }
-
-  const handlePayment = async(handlePayOS: () => Promise<void>) => {
-    try{
       setOpenPayOS(true)
       const res = await createPayOSLink(10000);
       const payOSConfig: PayOSConfig = {
         RETURN_URL: "http://localhost:3000/",
         ELEMENT_ID:
-        "payos-container",
+          "payos-container",
         CHECKOUT_URL: res.checkoutUrl,
         onSuccess: async (event: any) => {
           setOpenPayOS(false)
@@ -78,15 +65,29 @@ export function CustomerDashboard() {
           await handlePayOS()
         },
       }
-      
+
       const { open } = usePayOS(payOSConfig);
       open();
     }
-    catch(error){
+    catch (error) {
 
     }
-    finally{
+    finally {
 
+    }
+  }
+
+  const handleBookingComplete = (bookingId: string) => {
+    console.log("Booking completed:", bookingId)
+  }
+
+  const fetchWallet = async () => {
+    try {
+      const res = await getWalletByUserId(user?.id || "")
+      setWallet(res.data)
+    } catch (err) {
+      console.log("No wallet yet")
+      setWallet(null)
     }
   }
 
@@ -172,11 +173,11 @@ export function CustomerDashboard() {
   }, [user?.id])
 
   useEffect(() => {
-  if (!openReview) {
-    setRating(0)
-    setComment("")
-  }
-}, [openReview])
+    if (!openReview) {
+      setRating(0)
+      setComment("")
+    }
+  }, [openReview])
 
   return (
     <div className="space-y-6">
@@ -268,7 +269,7 @@ export function CustomerDashboard() {
                               <span
                                 className="ml-2 text-indigo-600 text-sm font-medium cursor-pointer hover:underline"
                                 onClick={() => {
-                                  setSelectedProvider(booking.user)
+                                  setSelectedProvider(booking.service.user)
                                   setOpenProviderDialog(true)
                                 }}
                               >
@@ -276,7 +277,6 @@ export function CustomerDashboard() {
                               </span>
                             </h4>
                           </div>
-
 
                           <p className="text-sm text-gray-500">
                             <span className="font-medium">Customer:</span> {booking.user?.fullName}
@@ -319,23 +319,27 @@ export function CustomerDashboard() {
                         </div>
                       </div>
 
-                      {/* Rating */}
-                      {booking.status.toLowerCase() === "completed" && (
+                      {booking.status.toLowerCase() === "completed" && user?.role === "Customer" && booking.reviews.length > 0 && (
                         <div className="mb-3">
                           <p className="text-xs text-gray-500">Your Rating</p>
                           <div className="flex items-center gap-1 text-yellow-500">
                             {[...Array(5)].map((_, i) => (
                               <Star
                                 key={i}
-                                className={`h-4 w-4 ${i < 4 ? "fill-current" : "stroke-current"
+                                className={`h-4 w-4 ${i < (booking.reviews[0].rating ?? 0) ? "fill-current" : "stroke-current"
                                   }`}
                               />
                             ))}
                           </div>
+                          {booking.reviews[0].comment && (
+                            <p className="text-xs text-gray-600 mt-1 italic">
+                              “{booking.reviews[0].comment}”
+                            </p>
+                          )}
                         </div>
                       )}
 
-                      {booking.status.toLowerCase() === "completed" && user && user.role === "Customer" && (
+                      {booking.status.toLowerCase() === "completed" && user?.role === "Customer" && booking.reviews.length == 0 && (
                         <Button
                           size="sm"
                           variant="outline"
@@ -346,14 +350,6 @@ export function CustomerDashboard() {
                           }}
                         >
                           Đánh giá
-                        </Button>
-                      )}
-
-
-                      {/* Actions */}
-                      {booking.status === "in-progress" && (
-                        <Button size="sm" variant="outline" className="rounded-lg hover:border-gray-300">
-                          View Progress
                         </Button>
                       )}
                     </div>
@@ -525,24 +521,15 @@ export function CustomerDashboard() {
         <BookingFlow
           service={selectedService}
           isOpen={showBookingFlow}
+          handlePayment={handlePayment}
           onClose={() => {
             setShowBookingFlow(false)
             setSelectedService(null)
           }}
           fetchData={fetchData}
           onBookingComplete={handleBookingComplete}
-          handlePayment={handlePayment}
         />
       )}
-      <Dialog open={openPayOS} onOpenChange={setOpenPayOS} >
-        <DialogContent
-          className="max-w-full w-full h-full p-0 bg-transparent border-0 shadow-none flex items-center justify-center"
-          showCloseButton={false}
-        >
-          <div id="payos-container"
-            style={{height:"100vh", width:"100vw"}} />
-        </DialogContent>
-      </Dialog>
     </div>
   )
 }

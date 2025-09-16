@@ -1,3 +1,4 @@
+import { ReviewDTO } from "./review"
 import { Service } from "./service"
 import { UserDTO } from "./user"
 
@@ -14,6 +15,7 @@ export interface Booking {
   updatedAt: Date
   service: Service
   user?: UserDTO
+  reviews: ReviewDTO[]
 }
 
 export interface BookingRequest {

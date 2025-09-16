@@ -13,7 +13,7 @@ export function ProviderProfileDialog({ open, onClose, provider }: ProviderProfi
 
     return (
         <Dialog open={open} onOpenChange={onClose}>
-            <DialogContent className="max-w-7xl max-h-[85vh] rounded-lg p-0 overflow-hidden flex flex-col bg-gradient-to-br from-gray-50 via-white to-gray-100 shadow-2xl">
+            <DialogContent className="sm:max-w-4xl max-h-[85vh] rounded-lg p-0 overflow-hidden flex flex-col bg-gradient-to-br from-gray-50 via-white to-gray-100 shadow-2xl">
                 {/* Header */}
                 <DialogHeader className="sticky top-0 z-10 bg-white/80 backdrop-blur-md px-8 py-6 border-b">
                     <DialogTitle className="text-2xl font-bold text-center text-gray-800 tracking-tight">
@@ -52,7 +52,7 @@ export function ProviderProfileDialog({ open, onClose, provider }: ProviderProfi
                         </div>
                         {provider.bio && (
                             <p className="text-gray-600 italic mt-2 border-l-4 border-indigo-200 pl-4">
-                                “{provider.bio}”
+                                <InfoItem label="Bio" value={provider.bio || "Chưa cập nhật"} />
                             </p>
                         )}
                     </div>
