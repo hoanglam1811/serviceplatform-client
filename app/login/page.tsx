@@ -7,31 +7,13 @@ import { SignupForm } from "@/components/auth/signup-form"
 import { Navbar } from "@/components/navigation/navbar"
 import { useRouter } from "next/navigation"
 import { useEffect } from "react"
-import { toast } from "@/components/ui/use-toast"
 import { notification } from "antd"
 
 export default function LoginPage() {
   const [isLoginMode, setIsLoginMode] = useState(true)
-  const { user, isLoading, isAuthenticated } = useAuth()
+  const { user, isLoading } = useAuth()
   const router = useRouter()
   console.log(user)
-
-  useEffect(() => {
-    if (isAuthenticated && user && user.status === "Pending") {
-      router.push("/login")
-      notification.error({
-        message: "Error",
-        description: "Failed to login. You have to wait for admin's approval",
-      })
-    }
-    else if (isAuthenticated && user){
-      router.push("/user-dashboard")
-      notification.success({
-        message: "Success",
-        description: "Welcome back! 🎉",
-      })
-    }
-  }, [isAuthenticated, user, router])
 
   if (isLoading) {
     return (
@@ -59,9 +41,9 @@ export default function LoginPage() {
           </div>
 
           {isLoginMode ? (
-            <LoginForm onToggleMode={() => setIsLoginMode(false)} />
+            <LoginForm router={router} onToggleMode={() => setIsLoginMode(false)} />
           ) : (
-            <SignupForm onToggleMode={() => setIsLoginMode(true)} />
+            <SignupForm user={user} onToggleMode={() => setIsLoginMode(true)} />
           )}
         </div>
       </div>

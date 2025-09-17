@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -12,15 +12,18 @@ import { Eye, EyeOff } from "lucide-react"
 
 interface LoginFormProps {
   onToggleMode: () => void
+  router: any
 }
 
-export function LoginForm({ onToggleMode }: LoginFormProps) {
+export function LoginForm({ onToggleMode, router }: LoginFormProps) {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
   const { user, login } = useAuth()
+
+  const { isAuthenticated } = useAuth()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -48,6 +51,23 @@ export function LoginForm({ onToggleMode }: LoginFormProps) {
 
     setIsLoading(false)
   }
+
+  useEffect(() => {
+    if (isAuthenticated && user && user.status === "Pending") {
+      router.push("/login")
+      notification.error({
+        message: "Error",
+        description: "Failed to login. You have to wait for admin's approval",
+      })
+    }
+    else if (isAuthenticated && user) {
+      router.push("/user-dashboard")
+      notification.success({
+        message: "Success",
+        description: "Welcome back! 🎉",
+      })
+    }
+  }, [isAuthenticated, user])
 
   return (
     <Card className="w-full max-w-md">

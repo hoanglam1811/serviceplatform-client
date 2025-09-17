@@ -15,7 +15,7 @@ interface AuthContextType extends AuthState {
     phoneNumber: string,
     nationalId: File[],
     gender: string,
-    role: "Provider" | "Customer") => Promise<boolean>
+    role: "Provider" | "Customer") => Promise<any>
   logout: () => void
 }
 
@@ -74,7 +74,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     nationalId: File[],
     gender: string,
     role: "Provider" | "Customer",
-  ): Promise<boolean> => {
+  ): Promise<any> => {
     try {
       const newUser: RegisterDTO = {
         email,
@@ -88,13 +88,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         role,
       }
       const res = await registerCustomer(newUser);
-
-      localStorage.setItem("user", JSON.stringify(res.data))
-      setAuthState({
-        user: res.data,
-        isLoading: false,
-        isAuthenticated: true,
-      })
+      const userData = res.data;
+      return userData
     }
     catch (err) {
       console.log(err);
@@ -103,7 +98,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     finally {
 
     }
-    return true
   }
 
   const logout = async () => {

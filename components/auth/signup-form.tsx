@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -10,15 +10,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { useAuth } from "@/contexts/auth-context"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select"
-import { useToast } from "../ui/use-toast"
 import { notification } from "antd"
+import { createProviderProfile } from "@/services/providerProfileService"
 
 interface SignupFormProps {
   onToggleMode: () => void
+  user: any
 }
 
-export function SignupForm({ onToggleMode }: SignupFormProps) {
-  const { toast } = useToast()
+export function SignupForm({ onToggleMode, user }: SignupFormProps) {
   const [formData, setFormData] = useState({
     fullName: "",
     username: "",
@@ -29,6 +29,11 @@ export function SignupForm({ onToggleMode }: SignupFormProps) {
     confirmPassword: "",
     nationalId: [] as File[],
     role: "Customer" as "Provider" | "Customer",
+    providerType: "Individual" as "Individual" | "Company",
+    companyName: "",
+    address: "",
+    taxCode: "",
+    businessPhone: "",
   })
 
   const [isLoading, setIsLoading] = useState(false)
@@ -48,6 +53,44 @@ export function SignupForm({ onToggleMode }: SignupFormProps) {
 
   const passwordStrength = getPasswordStrength(formData.password)
 
+  const handleCreateProviderProfile = async (user: any) => {
+    if (!user?.id) {
+      notification.error({
+        message: "❌ Lỗi",
+        description: "Không tìm thấy userId, vui lòng đăng nhập lại.",
+      })
+      return
+    }
+
+    try {
+      await createProviderProfile({
+        userId: user.id,
+        type: formData.providerType,
+        companyName:
+          formData.providerType === "Company" ? formData.companyName : null,
+        address: formData.providerType === "Company" ? formData.address : null,
+        taxCode: formData.providerType === "Company" ? formData.taxCode : null,
+        phoneNumber:
+          formData.providerType === "Company"
+            ? formData.businessPhone
+            : formData.phoneNumber,
+      })
+
+      notification.success({
+        message: "🎉 Thành công!",
+        description: "Hồ sơ Provider đã được tạo.",
+        placement: "topRight",
+      })
+    } catch (err) {
+      notification.error({
+        message: "🚨 Lỗi",
+        description: "Không thể tạo hồ sơ Provider.",
+        placement: "topRight",
+      })
+    }
+  }
+
+  // Đăng ký
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
@@ -60,7 +103,9 @@ export function SignupForm({ onToggleMode }: SignupFormProps) {
     }
 
     if (passwordStrength < 4) {
-      setError("Password is too weak. Must include uppercase, number, special character and min 6 chars")
+      setError(
+        "Password is too weak. Must include uppercase, number, special character and min 6 chars"
+      )
       setIsLoading(false)
       return
     }
@@ -71,31 +116,44 @@ export function SignupForm({ onToggleMode }: SignupFormProps) {
       return
     }
 
-    const success = await signup(
-      formData.email,
-      formData.password,
-      formData.fullName,
-      formData.username,
-      formData.phoneNumber,
-      formData.nationalId,
-      formData.gender,
-      formData.role
-    )
-    console.log(success);
-    if (success) {
-      notification.success({
-        message: "🎉 Thành công!",
-        description: "Vui lòng đợi admin duyệt tài khoản của bạn.",
-        placement: "topRight",
-      })
-    } else {
+    try {
+      const success = await signup(
+        formData.email,
+        formData.password,
+        formData.fullName,
+        formData.username,
+        formData.phoneNumber,
+        formData.nationalId,
+        formData.gender,
+        formData.role
+      )
+      console.log(user)
+      if (success) {
+        notification.success({
+          message: "🎉 Thành công!",
+          description: "Vui lòng đợi admin duyệt tài khoản của bạn.",
+          placement: "topRight",
+        })
+
+        if (formData.role === "Provider") {
+          await handleCreateProviderProfile(success)
+        }
+      } else {
+        notification.error({
+          message: "❌ Thất bại",
+          description: "Tạo tài khoản không thành công, vui lòng thử lại.",
+          placement: "topRight",
+        })
+      }
+    } catch (err) {
       notification.error({
-        message: "❌ Thất bại",
-        description: "Tạo tài khoản không thành công, vui lòng thử lại.",
+        message: "🚨 Lỗi",
+        description: "Đã có lỗi xảy ra trong quá trình đăng ký.",
         placement: "topRight",
       })
+    } finally {
+      setIsLoading(false)
     }
-    setIsLoading(false)
   }
 
   return (
@@ -317,6 +375,90 @@ export function SignupForm({ onToggleMode }: SignupFormProps) {
                 </div>
               </RadioGroup>
             </div>
+
+            {formData.role === "Provider" && (
+              <div className="space-y-3 mt-3">
+                <Label>Provider Type</Label>
+                <RadioGroup
+                  value={formData.providerType}
+                  onValueChange={(value) =>
+                    setFormData({
+                      ...formData,
+                      providerType: value as "Individual" | "Company",
+                    })
+                  }
+                >
+                  <div className="flex items-start space-x-2">
+                    <RadioGroupItem value="Individual" id="individual" />
+                    <Label htmlFor="individual" className="flex flex-col">
+                      <span className="font-medium">Individual</span>
+                      <span className="text-sm text-muted-foreground">
+                        Personal provider (freelancer)
+                      </span>
+                    </Label>
+                  </div>
+                  <div className="flex items-start space-x-2">
+                    <RadioGroupItem value="Company" id="company" />
+                    <Label htmlFor="company" className="flex flex-col">
+                      <span className="font-medium">Company</span>
+                      <span className="text-sm text-muted-foreground">
+                        Business with tax code
+                      </span>
+                    </Label>
+                  </div>
+                </RadioGroup>
+              </div>
+            )}
+
+            {formData.role === "Provider" && formData.providerType === "Company" && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-3">
+                <div className="space-y-2">
+                  <Label htmlFor="companyName">Company Name</Label>
+                  <Input
+                    id="companyName"
+                    type="text"
+                    value={formData.companyName}
+                    onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
+                    placeholder="Enter company name"
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="address">Company Address</Label>
+                  <Input
+                    id="address"
+                    type="text"
+                    value={formData.address}
+                    onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                    placeholder="Enter address"
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="taxCode">Tax Code</Label>
+                  <Input
+                    id="taxCode"
+                    type="text"
+                    value={formData.taxCode}
+                    onChange={(e) => setFormData({ ...formData, taxCode: e.target.value })}
+                    placeholder="Enter tax code"
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="businessPhone">Business Phone</Label>
+                  <Input
+                    id="businessPhone"
+                    type="text"
+                    value={formData.businessPhone}
+                    onChange={(e) => setFormData({ ...formData, businessPhone: e.target.value })}
+                    placeholder="Enter business phone"
+                    required
+                  />
+                </div>
+              </div>
+            )}
+
 
             <br />
             {error && <p className="text-sm text-red-600">{error}</p>}

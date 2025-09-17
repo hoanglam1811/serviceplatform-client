@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Camera, IdCard, Settings, User } from "lucide-react";
+import { Building2, Camera, IdCard, Settings, User } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export default function ProviderProfileForm({ userData, onSave }: any) {
@@ -156,6 +156,57 @@ export default function ProviderProfileForm({ userData, onSave }: any) {
                             className="rounded-xl border shadow-sm w-full h-[250px] object-cover"
                         />
                     ))}
+                </div>
+
+                <div className="p-6 space-y-4">
+                    <h3 className="flex items-center gap-2 text-lg font-semibold">
+                        <Building2 className="w-5 h-5 text-orange-500" /> Thông tin doanh nghiệp
+                    </h3>
+                    <div className="grid md:grid-cols-2 gap-4">
+                        <div>
+                            <label className="block text-sm font-bold text-muted-foreground mb-1">
+                                Tên công ty
+                            </label>
+                            <Input
+                                value={form.companyName}
+                                onChange={(e) => handleChange("companyName", e.target.value)}
+                                placeholder="Nhập tên công ty"
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-bold text-muted-foreground mb-1">
+                                Loại hình
+                            </label>
+                            <Input
+                                value={form.type}
+                                onChange={(e) => handleChange("type", e.target.value)}
+                                placeholder="VD: Cá nhân / Doanh nghiệp"
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-bold text-muted-foreground mb-1">
+                                Mã số thuế
+                            </label>
+                            <Input
+                                value={form.taxCode}
+                                onChange={(e) => handleChange("taxCode", e.target.value)}
+                                placeholder="Mã số thuế"
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-bold text-muted-foreground mb-1">
+                                Số điện thoại doanh nghiệp
+                            </label>
+                            <Input
+                                value={form.businessPhoneNumber}
+                                onChange={(e) => handleChange("businessPhoneNumber", e.target.value)}
+                                placeholder="Số điện thoại công ty"
+                            />
+                        </div>
+                    </div>
                 </div>
 
                 <div className="p-6 space-y-4">

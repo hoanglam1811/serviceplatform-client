@@ -229,7 +229,6 @@ export function CustomerDashboard() {
         <TabsList>
           <TabsTrigger value="browse">Browse Services</TabsTrigger>
           <TabsTrigger value="bookings">My Bookings</TabsTrigger>
-          <TabsTrigger value="favorites">Favorites</TabsTrigger>
           <TabsTrigger value="profile">My Profile</TabsTrigger>
           <TabsTrigger value="wallet">My Wallet</TabsTrigger>
         </TabsList>
@@ -417,20 +416,6 @@ export function CustomerDashboard() {
           provider={selectedProvider}
         />
 
-        <TabsContent value="favorites" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Favorite Services</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-center py-8 text-gray-500">
-                <Star className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <p>No favorites yet. Heart services you love to save them here!</p>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
         <TabsContent value="profile" className="space-y-4">
           <Card>
             <CardHeader>
@@ -530,13 +515,14 @@ export function CustomerDashboard() {
           onBookingComplete={handleBookingComplete}
         />
       )}
+
       <Dialog open={openPayOS} onOpenChange={setOpenPayOS} >
         <DialogContent
           className="max-w-full w-full h-full p-0 bg-transparent border-0 shadow-none flex items-center justify-center"
           showCloseButton={false}
         >
           <div id="payos-container"
-            style={{height:"100vh", width:"100vw"}} />
+            style={{ height: "100vh", width: "100vw" }} />
         </DialogContent>
       </Dialog>
     </div>

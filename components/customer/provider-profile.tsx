@@ -81,6 +81,8 @@ export function ProviderProfileDialog({ open, onClose, provider }: ProviderProfi
                         </div>
                     </div>
 
+                    
+
                 </div>
 
                 {/* Footer */}
