@@ -14,13 +14,13 @@ import { useAuth } from "@/contexts/auth-context"
 import CustomerProfile from "@/app/customer-profile/page"
 import { getBookingByUserId } from "@/services/bookingService"
 import { Input, notification, Rate } from "antd"
-import { createWallet, getWalletByUserId } from "@/services/walletService"
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "../ui/dialog"
+import { createWallet, getWalletByUserId, updateWallet } from "@/services/walletService"
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "../ui/dialog"
 import { ProviderProfileDialog } from "./provider-profile"
 import { createReview } from "@/services/reviewService"
 import { PayOSConfig, usePayOS } from "payos-checkout"
 import { createPayOSLink } from "@/services/payOSService"
-
+import { Label } from "../ui/label"
 
 export function CustomerDashboard() {
   const { user } = useAuth()
@@ -37,11 +37,33 @@ export function CustomerDashboard() {
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null)
   const [openReview, setOpenReview] = useState(false)
   const [openPayOS, setOpenPayOS] = useState(false)
-
+  const [openDeposit, setOpenDeposit] = useState(false)
+  const [depositAmount, setDepositAmount] = useState(0)
 
   const handleBookService = (service: Service) => {
     setSelectedService(service)
     setShowBookingFlow(true)
+  }
+
+  const handleDeposit = async () => {
+    try{
+      await updateWallet(wallet?.id, {
+        id: wallet?.id || "",
+        balance: wallet?.balance + depositAmount
+      })
+      notification.success({
+        message: "Thành công",
+        description: "Nạp tiền thành công!",
+      });
+      setOpenDeposit(false)
+      fetchWallet()
+    }
+    catch(err){
+
+    }
+    finally{
+
+    }
   }
 
   const handlePayment = async (handlePayOS: () => Promise<void>) => {
@@ -442,7 +464,7 @@ export function CustomerDashboard() {
                     {wallet.balance.toLocaleString()} ₫
                   </h3>
                   <div className="flex gap-3 justify-center">
-                    <Button variant="outline" className="rounded-xl">
+                    <Button onClick={() => setOpenDeposit(true)} variant="outline" className="rounded-xl">
                       Nạp tiền
                     </Button>
                     <Button variant="outline" className="rounded-xl">
@@ -465,6 +487,40 @@ export function CustomerDashboard() {
               )}
             </CardContent>
           </Card>
+
+          <Dialog open={openDeposit} onOpenChange={setOpenDeposit}>
+            <DialogContent className="sm:max-w-md">
+              <DialogHeader>
+                <DialogTitle>Nạp tiền</DialogTitle>
+                <DialogDescription>
+                  Nhập số tiền bạn muốn nạp vào tài khoản.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="grid gap-4 py-4">
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="amount" className="text-right">
+                    Số tiền
+                  </Label>
+                  <div className="relative col-span-3">
+                    <div className="absolute inset-y-0 left-0 flex items-center z-[1] pl-3 pointer-events-none">
+                      <span className="text-muted-foreground">₫</span>
+                    </div>
+                    <Input
+                      id="amount"
+                      type="number"
+                      value={depositAmount}
+                      onChange={(e) => setDepositAmount(Number(e.target.value))}
+                      className="!pl-9"
+                      placeholder="Nhập số tiền"
+                    />
+                  </div>
+                </div>
+              </div>
+              <DialogFooter>
+                <Button onClick={() => handlePayment(handleDeposit)}>Xác nhận nạp</Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
 
           {/* Modal xác nhận tạo ví */}
           <Dialog open={openConfirm} onOpenChange={setOpenConfirm}>
@@ -500,6 +556,8 @@ export function CustomerDashboard() {
           </Dialog>
         </TabsContent>
       </Tabs>
+
+
 
       {/* Booking Flow Modal */}
       {selectedService && (

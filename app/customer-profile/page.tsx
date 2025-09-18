@@ -1,14 +1,13 @@
 "use client";
 import { useEffect, useState } from "react";
 import { getUserById, updateUser } from "@/services/userService";
-import { useToast } from "@/hooks/use-toast";
 import UserProfileForm from "./CustomerProfileForm";
 import { useAuth } from "@/contexts/auth-context";
+import { notification } from "antd";
 
 export default function CustomerProfile() {
     const { user } = useAuth();
     const [userData, setUserData] = useState<any>(null);
-    const { toast } = useToast();
     console.log(user)
 
     useEffect(() => {
@@ -21,16 +20,15 @@ export default function CustomerProfile() {
         try {
             if (!user?.id) return;
             await updateUser(user?.id, updatedData);
-            toast({
-                title: "Thành công",
+            notification.success({
+                message: "Thành công",
                 description: "Cập nhật thông tin thành công!",
             });
             setUserData(updatedData);
         } catch (err) {
-            toast({
-                title: "Lỗi",
+            notification.success({
+                message: "Lỗi",
                 description: "Cập nhật thất bại!",
-                variant: "destructive",
             });
             console.error(err);
         }
