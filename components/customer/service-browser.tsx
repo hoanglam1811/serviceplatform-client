@@ -103,11 +103,13 @@ export function ServiceBrowser({ onBookService }: ServiceBrowserProps) {
       {/* Search and Filters */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2 text-xl font-bold text-gray-900">
             <Search className="h-5 w-5" />
             Find Services
           </CardTitle>
         </CardHeader>
+
+
         <CardContent className="space-y-4">
           <div className="flex flex-col md:flex-row gap-4">
             <div className="flex-1">

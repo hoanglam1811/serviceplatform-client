@@ -70,7 +70,7 @@ export function SignupForm({ onToggleMode, user }: SignupFormProps) {
           formData.providerType === "Company" ? formData.companyName : null,
         address: formData.providerType === "Company" ? formData.address : null,
         taxCode: formData.providerType === "Company" ? formData.taxCode : null,
-        phoneNumber:
+        businessPhone:
           formData.providerType === "Company"
             ? formData.businessPhone
             : formData.phoneNumber,
@@ -376,9 +376,12 @@ export function SignupForm({ onToggleMode, user }: SignupFormProps) {
               </RadioGroup>
             </div>
 
+            <br></br>
+            <br></br>
+
             {formData.role === "Provider" && (
               <div className="space-y-3 mt-3">
-                <Label>Provider Type</Label>
+                <Label>Provider Type:</Label>
                 <RadioGroup
                   value={formData.providerType}
                   onValueChange={(value) =>
@@ -393,22 +396,24 @@ export function SignupForm({ onToggleMode, user }: SignupFormProps) {
                     <Label htmlFor="individual" className="flex flex-col">
                       <span className="font-medium">Individual</span>
                       <span className="text-sm text-muted-foreground">
-                        Personal provider (freelancer)
+                        I am a personal provider offering my own services
                       </span>
                     </Label>
                   </div>
+
                   <div className="flex items-start space-x-2">
                     <RadioGroupItem value="Company" id="company" />
                     <Label htmlFor="company" className="flex flex-col">
                       <span className="font-medium">Company</span>
                       <span className="text-sm text-muted-foreground">
-                        Business with tax code
+                        I represent a registered business with legal entity
                       </span>
                     </Label>
                   </div>
                 </RadioGroup>
               </div>
             )}
+
 
             {formData.role === "Provider" && formData.providerType === "Company" && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-3">
@@ -458,7 +463,6 @@ export function SignupForm({ onToggleMode, user }: SignupFormProps) {
                 </div>
               </div>
             )}
-
 
             <br />
             {error && <p className="text-sm text-red-600">{error}</p>}

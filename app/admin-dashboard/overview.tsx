@@ -12,15 +12,18 @@ import { Textarea } from "@/components/ui/textarea";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import AdminSidebar from "./sidebar";
 import { notification } from "antd";
+import { Building2, IdCard, Mail, MapPin, Phone, User } from "lucide-react";
+import { ProviderProfileDTO } from "@/types/providerProfile";
+import { getProviderProfileByUserId } from "@/services/providerProfileService";
 
 type UserItem = {
     id: string;
     username: string;
     fullName: string;
-    role: string;
+    role: "Customer" | "Provider"
     avatarUrl?: string | null;
     email: string;
-    phoneNumber?: string | null;
+    phoneNumber: string;
     gender?: string | null;
     nationalId?: any;
     address?: string | null;
@@ -40,9 +43,11 @@ export default function AdminOverviewDashboard() {
 
     const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
     const [rejectReason, setRejectReason] = useState("");
-    const [selectedUser, setSelectedUser] = useState<{ id: string; role: "Customer" | "Provider" } | null>(null);
+    const [selectedUser, setSelectedUser] = useState<UserItem | null>(null);
     const [isApproveModalOpen, setIsApproveModalOpen] = useState(false);
     const currentList = activeTab === "customers" ? customers : providers;
+    const [isDetailOpen, setIsDetailOpen] = useState(false)
+    const [providerProfile, setProviderProfile] = useState<ProviderProfileDTO | null>(null);
 
     const [currentPage, setCurrentPage] = useState(1);
     const usersPerPage = 5;
@@ -139,6 +144,23 @@ export default function AdminOverviewDashboard() {
         setIsApproveModalOpen(true);
     };
 
+    const handleOpenDetail = async (u: UserItem) => {
+        setSelectedUser(u);
+        setIsDetailOpen(true);
+
+        if (u.role === "Provider") {
+            try {
+                const profile = await getProviderProfileByUserId(u.id);
+                setProviderProfile(profile?.data ?? {});
+            } catch (err) {
+                console.error("Failed to fetch provider profile", err);
+                setProviderProfile({});
+            }
+        } else {
+            setProviderProfile(null);
+        }
+    };
+
     const approveUser = async (id: string, role: "Customer" | "Provider") => {
         await updateUserStatus(id, role);
         setCustomers((prev) =>
@@ -158,8 +180,8 @@ export default function AdminOverviewDashboard() {
         setIsApproveModalOpen(false);
     };
 
-    const handleReject = (id: string, role: "Customer" | "Provider") => {
-        setSelectedUser({ id, role });
+    const handleReject = (user: UserItem) => {
+        setSelectedUser(user);
         setRejectReason("");
         setIsRejectModalOpen(true);
     };
@@ -372,25 +394,14 @@ export default function AdminOverviewDashboard() {
                                                         </Tooltip>
                                                     </TooltipProvider>
 
-
                                                     <TooltipProvider>
                                                         <Tooltip>
                                                             <TooltipTrigger asChild>
                                                                 <Button
                                                                     variant="destructive"
                                                                     size="sm"
-                                                                    onClick={() =>
-                                                                        handleReject(
-                                                                            u.id,
-                                                                            u.role as
-                                                                            | "Customer"
-                                                                            | "Provider"
-                                                                        )
-                                                                    }
-                                                                    disabled={
-                                                                        processingId === u.id
-                                                                    }
-
+                                                                    onClick={() => handleReject(u)}
+                                                                    disabled={processingId === u.id}
                                                                 >
                                                                     Reject
                                                                 </Button>
@@ -400,7 +411,25 @@ export default function AdminOverviewDashboard() {
                                                             </TooltipContent>
                                                         </Tooltip>
                                                     </TooltipProvider>
+
+                                                    <TooltipProvider>
+                                                        <Tooltip>
+                                                            <TooltipTrigger asChild>
+                                                                <Button
+                                                                    variant="secondary"
+                                                                    size="sm"
+                                                                    onClick={() => handleOpenDetail(u)}
+                                                                >
+                                                                    Chi tiết
+                                                                </Button>
+                                                            </TooltipTrigger>
+                                                            <TooltipContent>
+                                                                <p>Xem thông tin chi tiết</p>
+                                                            </TooltipContent>
+                                                        </Tooltip>
+                                                    </TooltipProvider>
                                                 </div>
+
                                             </td>
                                         </tr>
                                     ))
@@ -429,6 +458,123 @@ export default function AdminOverviewDashboard() {
                                 Next
                             </Button>
                         </div>
+
+                        <Dialog open={isDetailOpen} onOpenChange={setIsDetailOpen}>
+                            <DialogContent className="sm:max-w-4xl max-h-[85vh] rounded-lg p-0 overflow-hidden flex flex-col bg-gradient-to-br from-gray-50 via-white to-gray-100 shadow-2xl">
+                                {selectedUser && (
+                                    <>
+                                        <DialogHeader className="sticky top-0 z-10 bg-white/80 backdrop-blur-md px-8 py-6 border-b">
+                                            <DialogTitle className="text-2xl font-bold text-center text-gray-800 tracking-tight">
+                                                Hồ sơ User
+                                            </DialogTitle>
+                                        </DialogHeader>
+
+                                        <div className="flex-1 overflow-y-auto px-10 py-8 space-y-10 custom-scrollbar">
+                                            {/* Avatar + Basic Info */}
+                                            <div className="flex items-center gap-10">
+                                                <img
+                                                    src={selectedUser.avatarUrl || "/default-avatar.png"}
+                                                    alt="avatar"
+                                                    className="w-36 h-36 rounded-2xl border-4 border-indigo-100 shadow-lg object-cover"
+                                                />
+                                                <div className="space-y-3">
+                                                    <h2 className="text-2xl font-semibold text-gray-900">
+                                                        {selectedUser.fullName}
+                                                    </h2>
+                                                    <p className="text-gray-500">@{selectedUser.username}</p>
+                                                    <span className="inline-block text-sm px-3 py-1 rounded-full bg-green-100 text-green-700 font-medium">
+                                                        {selectedUser.status}
+                                                    </span>
+                                                </div>
+                                            </div>
+
+                                            {/* Info */}
+                                            <div className="p-6 bg-white rounded-2xl shadow-sm border border-gray-100 space-y-4">
+                                                <h3 className="flex items-center gap-2 text-xl font-semibold text-indigo-600">
+                                                    <User className="w-5 h-5" /> Thông tin cá nhân
+                                                </h3>
+                                                <div className="grid md:grid-cols-2 gap-6">
+                                                    <InfoItem
+                                                        icon={<Mail className="w-4 h-4" />}
+                                                        label="Email"
+                                                        value={selectedUser.email}
+                                                    />
+                                                    <InfoItem
+                                                        icon={<Phone className="w-4 h-4" />}
+                                                        label="Số điện thoại"
+                                                        value={selectedUser.phoneNumber}
+                                                    />
+                                                    <InfoItem
+                                                        icon={<MapPin className="w-4 h-4" />}
+                                                        label="Địa chỉ"
+                                                        value={selectedUser.address || "Chưa có"}
+                                                    />
+                                                    <InfoItem
+                                                        label="Giới tính"
+                                                        value={selectedUser.gender || "Chưa cập nhật"}
+                                                    />
+                                                </div>
+                                                {selectedUser.bio && (
+                                                    <p className="text-gray-600 italic mt-2 border-l-4 border-indigo-200 pl-4">
+                                                        {selectedUser.bio}
+                                                    </p>
+                                                )}
+                                            </div>
+
+                                            {/* Giấy tờ */}
+                                            <div className="p-6 bg-white rounded-2xl shadow-sm border border-gray-100">
+                                                <h3 className="flex items-center gap-2 text-xl font-semibold text-emerald-600">
+                                                    <IdCard className="w-5 h-5" /> Giấy tờ tùy thân
+                                                </h3>
+                                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-6 place-items-center">
+                                                    {(selectedUser.nationalId?.split(",") || []).map(
+                                                        (url: string, idx: number) => (
+                                                            <div
+                                                                key={idx}
+                                                                className="relative group rounded-2xl overflow-hidden shadow-md border hover:shadow-lg transition"
+                                                            >
+                                                                <img
+                                                                    src={url.trim()}
+                                                                    alt={`National ID ${idx + 1}`}
+                                                                    className="w-[360px] h-[240px] object-cover group-hover:scale-105 transition-transform duration-300"
+                                                                />
+                                                                <div className="absolute bottom-2 right-2 bg-black/50 text-white text-xs px-2 py-1 rounded-md">
+                                                                    ID {idx + 1}
+                                                                </div>
+                                                            </div>
+                                                        )
+                                                    )}
+                                                </div>
+                                            </div>
+
+                                            {selectedUser.role === "Provider" && (
+                                                <div className="p-6 bg-white rounded-2xl shadow-sm border border-gray-100 space-y-4">
+                                                    <h3 className="flex items-center gap-2 text-xl font-semibold text-purple-600">
+                                                        <Building2 className="w-5 h-5" /> Thông tin Doanh nghiệp
+                                                    </h3>
+                                                    <div className="grid md:grid-cols-2 gap-6">
+                                                        <InfoItem label="Công ty" value={providerProfile?.companyName || "Trống"} />
+                                                        <InfoItem label="Loại hình" value={providerProfile?.type || "Trống"} />
+                                                        <InfoItem label="Mã số thuế" value={providerProfile?.taxCode || "Trống"} />
+                                                        <InfoItem label="Địa chỉ" value={providerProfile?.address || "Trống"} />
+                                                        <InfoItem label="Số điện thoại" value={providerProfile?.businessPhone || "Trống"} />
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        <div className="sticky bottom-0 bg-white/90 backdrop-blur-md px-10 py-5 border-t flex justify-end">
+                                            <Button
+                                                onClick={() => setIsDetailOpen(false)}
+                                                className="rounded-xl bg-gradient-to-r from-black to-gray-800 text-white px-10 py-3 shadow-md hover:shadow-lg hover:scale-105 transition"
+                                            >
+                                                Đóng
+                                            </Button>
+                                        </div>
+                                    </>
+                                )}
+                            </DialogContent>
+                        </Dialog>
 
                         <Dialog open={isApproveModalOpen} onOpenChange={setIsApproveModalOpen}>
                             <DialogContent>
@@ -534,4 +680,15 @@ export default function AdminOverviewDashboard() {
             </div>
         </div>
     );
+}
+
+function InfoItem({ icon, label, value }: { icon?: React.ReactNode; label: string; value: string }) {
+    return (
+        <div className="space-y-1">
+            <p className="flex items-center gap-1 text-sm font-medium text-gray-500">
+                {icon} {label}
+            </p>
+            <p className="font-semibold text-gray-800">{value}</p>
+        </div>
+    )
 }

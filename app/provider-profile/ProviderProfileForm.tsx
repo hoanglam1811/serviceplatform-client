@@ -1,14 +1,18 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Building2, Camera, IdCard, Settings, User } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
-export default function ProviderProfileForm({ userData, onSave }: any) {
-    const [form, setForm] = useState(userData);
+export default function ProviderProfileForm({ userData, providerProfile, onSave }: any) {
+  const [form, setForm] = useState({ ...userData, ...(providerProfile ?? {}) });
     console.log(userData)
+
+    useEffect(() => {
+    setForm({ ...userData, ...(providerProfile ?? {}) });
+  }, [userData, providerProfile]);
 
     const handleChange = (field: string, value: string) => {
         setForm((prev: any) => ({ ...prev, [field]: value }));

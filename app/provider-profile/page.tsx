@@ -7,84 +7,90 @@ import ProviderProfileForm from "./ProviderProfileForm";
 import { notification } from "antd";
 
 export default function ProviderProfile() {
-    const { user } = useAuth();
-    const [userData, setUserData] = useState<any>(null);
-    console.log(user)
+  const { user } = useAuth();
+  const [userData, setUserData] = useState<any>(null);
+  const [providerProfile, setProviderProfile] = useState<any>(null);
+  console.log(user)
 
-    useEffect(() => {
-        const fetchData = async () => {
-            if (!user?.id) return;
-            try {
-                const [userRes, providerRes] = await Promise.all([
-                    getUserById(user.id),
-                    getProviderProfileByUserId(user.id),
-                ]);
+  useEffect(() => {
+    const fetchData = async () => {
+      if (!user?.id) return;
+      try {
+        const [userRes, providerRes] = await Promise.all([
+          getUserById(user.id),
+          getProviderProfileByUserId(user.id),
+        ]);
 
-                setUserData({
-                    ...userRes.data,
-                    ...providerRes,
-                });
-            } catch (err) {
-                console.error("Error loading profile:", err);
-                notification.error({
-                    message: "Lỗi",
-                    description: "Không thể tải thông tin hồ sơ",
-                });
-            }
-        };
+        setUserData(userRes.data);
 
-        fetchData();
-    }, [user]);
-
-    const handleUpdate = async (updatedData: any) => {
-        try {
-            if (!user?.id) return;
-
-            const userDto = {
-                id: user.id,
-                fullName: updatedData.fullName,
-                phoneNumber: updatedData.phoneNumber,
-                address: updatedData.address,
-                gender: updatedData.gender,
-                bio: updatedData.bio,
-                avatarUrl: updatedData.avatarUrl,
-            };
-
-            const providerDto = {
-                id: updatedData.id,
-                userId: user.id,
-                companyName: updatedData.companyName,
-                type: updatedData.type,
-                taxCode: updatedData.taxCode,
-                phoneNumber: updatedData.businessPhoneNumber,
-                address: updatedData.businessAddress,
-            };
-
-            await Promise.all([
-                updateUser(user.id, userDto),
-                updateProviderProfile(providerDto),
-            ]);
-
-            notification.success({
-                message: "Thành công",
-                description: "Cập nhật thông tin hồ sơ thành công!",
-            });
-
-            setUserData(updatedData);
-        } catch (err) {
-            console.error(err);
-            notification.error({
-                message: "Lỗi",
-                description: "Cập nhật thất bại, vui lòng thử lại.",
-            });
+        if (providerRes?.data) {
+          setProviderProfile(providerRes.data);
+        } else {
+          setProviderProfile(null);
         }
+      } catch (err) {
+        console.error("Error loading profile:", err);
+        notification.error({
+          message: "Lỗi",
+          description: "Không thể tải thông tin hồ sơ",
+        });
+        setProviderProfile(null);
+      }
     };
 
-    if (!userData) return <p className="text-center mt-10">Đang tải...</p>;
+    fetchData();
+  }, [user]);
 
-    return (
-        <div className="p-6 max-w-6xl mx-auto">
-            <ProviderProfileForm userData={userData} onSave={handleUpdate} />
-        </div>
-    );
+  const handleUpdate = async (updatedData: any) => {
+    try {
+      if (!user?.id) return;
+
+      const userDto = {
+        id: user.id,
+        fullName: updatedData.fullName,
+        phoneNumber: updatedData.phoneNumber,
+        address: updatedData.address,
+        gender: updatedData.gender,
+        bio: updatedData.bio,
+        avatarUrl: updatedData.avatarUrl,
+      };
+
+      const providerDto = {
+        id: updatedData.id,
+        userId: user.id,
+        companyName: updatedData.companyName,
+        type: updatedData.type,
+        taxCode: updatedData.taxCode,
+        phoneNumber: updatedData.businessPhoneNumber,
+        address: updatedData.businessAddress,
+      };
+
+      await Promise.all([
+        updateUser(user.id, userDto),
+        updateProviderProfile(providerDto),
+      ]);
+
+      notification.success({
+        message: "Thành công",
+        description: "Cập nhật thông tin hồ sơ thành công!",
+      });
+
+      setUserData(userDto);
+      setProviderProfile(providerDto);
+    } catch (err) {
+      console.error(err);
+      notification.error({
+        message: "Lỗi",
+        description: "Cập nhật thất bại, vui lòng thử lại.",
+      });
+    }
+  };
+
+  if (!userData) return <p className="text-center mt-10">Đang tải...</p>;
+
+  return (
+    <div className="p-6 max-w-6xl mx-auto">
+      <ProviderProfileForm userData={userData} providerProfile={providerProfile} onSave={handleUpdate} />
+    </div>
+  );
 }

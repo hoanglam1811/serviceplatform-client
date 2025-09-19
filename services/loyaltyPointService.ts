@@ -1,48 +1,24 @@
-import api from "./api";
-import { CreateChatDTO, UpdateChatDTO } from "@/types/chat";
+import { LoyaltyPointDTO } from "@/types/loyaltyPoints"
+import api from "./api"
 
-// CREATE
-export const createChat = async (dto: CreateChatDTO) => {
-  const res = await api.post("/chat", dto);
-  return res.data;
-};
+export const getPointsByUserId = async (userId: string): Promise<number | null> => {
+  const res = await api.get(`/loyaltypoints/${userId}`)
+  return res.data.data
+}
 
-// READ - Get all
-export const getAllChats = async () => {
-  const res = await api.get("/chat");
-  return res.data;
-};
+export const addPoints = async (userId: string, points: number): Promise<string> => {
+  const res = await api.post(`/loyaltypoints/${userId}/add`, null, {
+    params: { points },
+  })
+  return res.data.data
+}
 
-// READ - Get by Id
-export const getChatById = async (id: string) => {
-  const res = await api.get(`/chat/${id}`);
-  return res.data;
-};
+export const deleteLoyaltyPoint = async (id: string): Promise<LoyaltyPointDTO> => {
+  const res = await api.delete(`/loyaltypoints/${id}`)
+  return res.data.data
+}
 
-// UPDATE
-export const updateChat = async (id: string, dto: UpdateChatDTO) => {
-  const res = await api.put(`/chat/${id}`, dto);
-  return res.data;
-};
-
-// DELETE
-export const deleteChat = async (id: string) => {
-  const res = await api.delete(`/chat/${id}`);
-  return res.data;
-};
-
-// GET conversation between two users
-export const getConversation = async (user1: string, user2: string) => {
-  const res = await api.get("/chat/conversation", {
-    params: { user1, user2 },
-  });
-  return res.data;
-};
-
-// MARK messages as read
-export const markAsRead = async (senderId: string, receiverId: string) => {
-  const res = await api.put("/chat/mark-as-read", null, {
-    params: { senderId, receiverId },
-  });
-  return res.data;
+export const redeemLoyaltyPoints = async (userId: string, points: number): Promise<string> => {
+  const res = await api.post(`/loyaltypoints/${userId}/redeem?points=${points}`);
+  return res.data.data;
 };

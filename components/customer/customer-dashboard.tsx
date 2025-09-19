@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Calendar, Clock, Star, ShoppingBag, Plus, ArrowDownCircle, ArrowUpCircle, Wallet } from "lucide-react"
+import { Calendar, Clock, Star, ShoppingBag, Plus, ArrowDownCircle, ArrowUpCircle, Wallet, Receipt, CheckCircle2, XCircle, Loader2, Gift } from "lucide-react"
 import { ServiceBrowser } from "./service-browser"
 import { BookingFlow } from "../booking/booking-flow"
 import type { Service, ServiceDTO } from "@/types/service"
@@ -21,6 +21,9 @@ import { createReview } from "@/services/reviewService"
 import { PayOSConfig, usePayOS } from "payos-checkout"
 import { createPayOSLink } from "@/services/payOSService"
 import { Label } from "../ui/label"
+import { TransactionDTO } from "@/types/transaction"
+import { createTransaction, getTransactionsByUserId } from "@/services/transactionService"
+import { getPointsByUserId } from "@/services/loyaltyPointService"
 
 export function CustomerDashboard() {
   const { user } = useAuth()
@@ -39,6 +42,10 @@ export function CustomerDashboard() {
   const [openPayOS, setOpenPayOS] = useState(false)
   const [openDeposit, setOpenDeposit] = useState(false)
   const [depositAmount, setDepositAmount] = useState(0)
+  const [transactions, setTransactions] = useState<TransactionDTO[]>([])
+  const [loadingTx, setLoadingTx] = useState(false)
+  const [points, setPoints] = useState<number | null>(null)
+  const [loadingPoints, setLoadingPoints] = useState(false)
 
   const handleBookService = (service: Service) => {
     setSelectedService(service)
@@ -46,23 +53,34 @@ export function CustomerDashboard() {
   }
 
   const handleDeposit = async () => {
-    try{
-      await updateWallet(wallet?.id, {
-        id: wallet?.id || "",
-        balance: wallet?.balance + depositAmount
+    if (!wallet) return
+
+    try {
+      await updateWallet(wallet.id, {
+        id: wallet.id,
+        balance: wallet.balance + depositAmount,
       })
+
+      await createTransaction({
+        walletId: wallet.id,
+        amount: depositAmount,
+        currency: "VND",
+        status: "Success",
+        createdAt: new Date().toISOString(),
+      })
+
       notification.success({
         message: "Thành công",
-        description: "Nạp tiền thành công!",
-      });
+        description: "Nạp tiền thành công! Vui lòng tải lại trang để xem lịch sử giao dịch",
+      })
+
       setOpenDeposit(false)
-      fetchWallet()
-    }
-    catch(err){
-
-    }
-    finally{
-
+      await fetchWallet()
+    } catch (err) {
+      notification.error({
+        message: "Thất bại",
+        description: "Không thể nạp tiền, vui lòng thử lại.",
+      })
     }
   }
 
@@ -133,8 +151,7 @@ export function CustomerDashboard() {
   }
 
   const isWithin2Days = selectedBooking
-    ? new Date().getTime() - new Date(selectedBooking.endTime).getTime() <=
-    2 * 24 * 60 * 60 * 1000
+    ? Date.now() - new Date(selectedBooking.endTime).getTime() <= 2 * 24 * 60 * 60 * 1000
     : false
 
   const handleSubmitReview = async () => {
@@ -167,9 +184,11 @@ export function CustomerDashboard() {
     }
   }
 
-  const completedBookings = bookings.filter((booking) => booking.status === "completed")
-  const activeBookings = bookings.filter((booking) => booking.status !== "completed")
-  const totalSpent = bookings.reduce((sum, booking) => sum + booking.service.discountPrice, 0)
+  const completedBookings = bookings.filter((booking) => booking.status === "Completed")
+  const totalSpent = bookings.reduce(
+    (sum, booking) => sum + (booking.service?.discountPrice ?? 0),
+    0
+  )
 
   const fetchData = async () => {
     try {
@@ -195,6 +214,33 @@ export function CustomerDashboard() {
   }, [user?.id])
 
   useEffect(() => {
+    if (!user?.id) return
+
+    const fetchTransactions = async () => {
+      try {
+        setLoadingTx(true)
+        const txs = await getTransactionsByUserId(user.id)
+        setTransactions(txs)
+      } catch (err) {
+        console.error("Failed to fetch transactions:", err)
+      } finally {
+        setLoadingTx(false)
+      }
+    }
+
+    fetchTransactions()
+  }, [user?.id])
+
+  useEffect(() => {
+    if (user?.id) {
+      setLoadingPoints(true)
+      getPointsByUserId(user.id)
+        .then(setPoints)
+        .finally(() => setLoadingPoints(false))
+    }
+  }, [user?.id])
+
+  useEffect(() => {
     if (!openReview) {
       setRating(0)
       setComment("")
@@ -211,7 +257,6 @@ export function CustomerDashboard() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{bookings.length}</div>
-            <p className="text-xs text-muted-foreground">{activeBookings.length} active</p>
           </CardContent>
         </Card>
         <Card>
@@ -253,6 +298,8 @@ export function CustomerDashboard() {
           <TabsTrigger value="bookings">My Bookings</TabsTrigger>
           <TabsTrigger value="profile">My Profile</TabsTrigger>
           <TabsTrigger value="wallet">My Wallet</TabsTrigger>
+          <TabsTrigger value="transactions">Transaction History</TabsTrigger>
+          <TabsTrigger value="loyalty">My Loyalty Points</TabsTrigger>
         </TabsList>
 
         <TabsContent value="browse" className="space-y-4">
@@ -440,8 +487,8 @@ export function CustomerDashboard() {
 
         <TabsContent value="profile" className="space-y-4">
           <Card>
-            <CardHeader>
-              <CardTitle>My Profile</CardTitle>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-xl font-bold text-gray-900">My Profile</CardTitle>
             </CardHeader>
             <CardContent>
               <CustomerProfile />
@@ -453,9 +500,7 @@ export function CustomerDashboard() {
           {/* Balance Card */}
           <Card className="border border-gray-200 shadow-sm rounded-2xl">
             <CardHeader className="pb-2">
-              <CardTitle className="text-base font-medium text-gray-700">
-                My Wallet
-              </CardTitle>
+              <CardTitle className="text-xl font-bold text-gray-900">My Wallet</CardTitle>
             </CardHeader>
             <CardContent className="flex flex-col items-center justify-center py-8">
               {wallet ? (
@@ -555,9 +600,143 @@ export function CustomerDashboard() {
             </DialogContent>
           </Dialog>
         </TabsContent>
+
+        <TabsContent value="transactions" className="space-y-4">
+          <Card className="border border-gray-200 shadow-sm rounded-2xl overflow-hidden">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-xl font-bold text-gray-900">Transaction History</CardTitle>
+              <p className="text-sm text-gray-500">Track all your wallet and booking transactions</p>
+            </CardHeader>
+            <CardContent>
+              {transactions.length === 0 ? (
+                <div className="text-center py-12 text-gray-500">
+                  <Receipt className="h-14 w-14 mx-auto mb-4 opacity-40" />
+                  <p className="mb-4">No transactions yet. Start booking or top up your wallet!</p>
+                </div>
+              ) : (
+                <div className="divide-y">
+                  {transactions.map((tx) => {
+                    const isSuccess = tx.status?.toLowerCase() === "success"
+                    const isPending = tx.status?.toLowerCase() === "pending"
+                    const isFailed = tx.status?.toLowerCase() === "failed"
+
+                    return (
+                      <div
+                        key={tx.id}
+                        className="flex items-center justify-between py-4 hover:bg-gray-50 px-3 rounded-lg transition"
+                      >
+                        {/* Left info */}
+                        <div className="flex items-center gap-3">
+                          <div
+                            className={`p-2 rounded-full ${isSuccess
+                              ? "bg-emerald-100 text-emerald-600"
+                              : isPending
+                                ? "bg-yellow-100 text-yellow-600"
+                                : isFailed
+                                  ? "bg-rose-100 text-rose-600"
+                                  : "bg-gray-100 text-gray-500"
+                              }`}
+                          >
+                            {isSuccess && <CheckCircle2 className="h-5 w-5" />}
+                            {isPending && <Clock className="h-5 w-5" />}
+                            {isFailed && <XCircle className="h-5 w-5" />}
+                            {!isSuccess && !isPending && !isFailed && (
+                              <Receipt className="h-5 w-5" />
+                            )}
+                          </div>
+
+                          <div className="flex flex-col">
+                            <span className="font-medium text-gray-900">
+                              {isSuccess
+                                ? "Payment Successful"
+                                : isPending
+                                  ? "Transaction Pending"
+                                  : isFailed
+                                    ? "Payment Failed"
+                                    : "Transaction"}
+                            </span>
+                            <span className="text-sm text-gray-500">
+                              {tx.createdAt
+                                ? new Date(tx.createdAt).toLocaleDateString("vi-VN")
+                                : ""}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Right info */}
+                        <div className="flex flex-col text-right">
+                          <span
+                            className={`font-semibold ${tx.amount && tx.amount > 0
+                              ? "text-emerald-600"
+                              : "text-rose-600"
+                              }`}
+                          >
+                            {tx.amount && tx.amount > 0 ? "+" : ""}
+                            {tx.amount?.toLocaleString()} {tx.currency}
+                          </span>
+                          <Badge
+                            className={`
+                  mt-1 px-2 py-0.5 text-xs rounded-full w-fit ml-auto
+                  ${isSuccess
+                                ? "bg-emerald-100 text-emerald-700"
+                                : isPending
+                                  ? "bg-yellow-100 text-yellow-700"
+                                  : isFailed
+                                    ? "bg-rose-100 text-rose-700"
+                                    : "bg-gray-100 text-gray-600"
+                              }
+                `}
+                          >
+                            {tx.status}
+                          </Badge>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="loyalty" className="space-y-4">
+          <Card className="border border-gray-200 shadow-sm rounded-2xl overflow-hidden">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-xl font-bold text-gray-900">My Loyalty Points</CardTitle>
+              <p className="text-sm text-gray-500">
+                Earn points by booking services and giving feedback
+              </p>
+            </CardHeader>
+            <CardContent>
+              {loadingPoints ? (
+                <div className="text-center py-12 text-gray-500">
+                  <Loader2 className="h-10 w-10 mx-auto mb-4 animate-spin opacity-40" />
+                  <p>Loading your loyalty points...</p>
+                </div>
+              ) : points === null || points === undefined ? (
+                <div className="text-center py-12 text-gray-500">
+                  <Gift className="h-14 w-14 mx-auto mb-4 opacity-40" />
+                  <p className="mb-4">No loyalty points yet. Start booking to earn rewards!</p>
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center py-10">
+                  <div className="p-6 bg-gradient-to-r from-amber-100 to-yellow-200 rounded-full shadow-inner">
+                    <Star className="h-12 w-12 text-amber-500" />
+                  </div>
+                  <h2 className="mt-4 text-3xl font-extrabold text-gray-900">
+                    {points.toLocaleString()} pts
+                  </h2>
+                  <p className="text-sm text-gray-500 mt-1">
+                    Your current loyalty balance
+                  </p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+
       </Tabs>
-
-
 
       {/* Booking Flow Modal */}
       {selectedService && (

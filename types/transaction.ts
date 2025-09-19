@@ -13,6 +13,7 @@ export interface CreateTransactionDTO {
   amount?: number
   currency?: string
   status?: string
+  createdAt?: string
 }
 
 export interface UpdateTransactionDTO {

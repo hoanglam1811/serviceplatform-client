@@ -5,7 +5,7 @@ export interface ProviderProfileDTO {
   type?: string 
   address?: string
   taxCode?: string
-  phoneNumber?: string
+  businessPhone?: string
   createdAt?: Date
   updatedAt?: Date
 }
@@ -16,7 +16,7 @@ export interface CreateProviderProfileDTO {
   type?: "Individual" | "Company"
   address?: string | null
   taxCode?: string | null
-  phoneNumber?: string
+  businessPhone?: string
 }
 
 export interface UpdateProviderProfileDTO {
@@ -25,5 +25,5 @@ export interface UpdateProviderProfileDTO {
   type?: "Individual" | "Company"
   address?: string | null
   taxCode?: string | null
-  phoneNumber?: string
+  businessPhone?: string
 }
