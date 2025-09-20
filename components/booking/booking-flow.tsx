@@ -15,6 +15,8 @@ import { createBooking } from "@/services/bookingService"
 import { notification } from "antd"
 import { getPointsByUserId, redeemLoyaltyPoints } from "@/services/loyaltyPointService"
 import { Switch } from "../ui/switch"
+import { updateWallet } from "@/services/walletService"
+import Link from "next/link"
 
 interface BookingFlowProps {
   service: Service
@@ -22,12 +24,14 @@ interface BookingFlowProps {
   onClose: () => void
   onBookingComplete: (bookingId: string) => void
   fetchData: () => Promise<void>
-  handlePayment: (handlePayOS: () => Promise<void>) => void
+  wallet: any
+  fetchWallet: () => Promise<void>
+  setTabData: (data: string) => void
 }
 
 type BookingStep = "datetime" | "details" | "payment" | "payos" | "confirmation"
 
-export function BookingFlow({ service, isOpen, onClose, onBookingComplete, fetchData, handlePayment }: BookingFlowProps) {
+export function BookingFlow({ service, isOpen, onClose, onBookingComplete, fetchData, wallet, fetchWallet, setTabData }: BookingFlowProps) {
   const [currentStep, setCurrentStep] = useState<BookingStep>("datetime")
   const [selectedDate, setSelectedDate] = useState<Date>()
   const [selectedTime, setSelectedTime] = useState<string>("")
@@ -37,6 +41,7 @@ export function BookingFlow({ service, isOpen, onClose, onBookingComplete, fetch
   const [usePoints, setUsePoints] = useState(false)
   const [points, setPoints] = useState<number>(0)
   const [pointsToUse, setPointsToUse] = useState<number>(0)
+  const [showDepositMore, setShowDepositMore] = useState(false)
 
   // Generate available time slots
   const generateTimeSlots = (start: string, end: string, interval: number = 30) => {
@@ -97,7 +102,23 @@ export function BookingFlow({ service, isOpen, onClose, onBookingComplete, fetch
         await redeemLoyaltyPoints(user.id, pointsToUse)
       }
 
-      await createBooking(bookingRequest)
+      if (wallet.balance < service.discountPrice) {
+        notification.error({
+          message: "Insufficient Balance",
+          description: "You do not have enough balance in your wallet to book this service.",
+        })
+        setIsProcessing(false)
+        setShowDepositMore(true)
+        return
+      }
+        
+      await Promise.all([
+        updateWallet(wallet.id, {
+          id: wallet.id,
+          balance: wallet.balance - service.discountPrice,
+        }),
+        createBooking(bookingRequest)
+      ])
 
       const bookingId = `booking_${Date.now()}`
       setIsProcessing(false)
@@ -108,7 +129,8 @@ export function BookingFlow({ service, isOpen, onClose, onBookingComplete, fetch
         description: `Your booking for "${service.name}" is confirmed on ${startDate.toLocaleDateString()} at ${selectedTime}.`,
       })
 
-      await fetchData()
+      fetchData()
+      fetchWallet()
 
       setTimeout(() => {
         onBookingComplete(bookingId)
@@ -344,14 +366,22 @@ export function BookingFlow({ service, isOpen, onClose, onBookingComplete, fetch
                         <div className="flex items-center gap-3">
                           <CreditCard className="h-5 w-5" />
                           <div>
-                            <p className="font-medium">Credit Card (Demo)</p>
-                            <p className="text-sm text-gray-600">**** **** **** 4242</p>
+                            <p className="font-medium">Wallet</p>
+                            <p className="text-sm text-gray-600"></p>
                           </div>
                         </div>
                       </div>
-                      <p className="text-xs text-gray-500">
-                        This is a demo booking system. No actual payment will be processed.
-                      </p>
+                      {showDepositMore && <>
+                        <div className="text-red-500 text-sm">Not enough money in your wallet.</div>
+                        <div className="text-red-500 text-sm">Deposit <Link 
+                          onClick={() => {
+                            setTabData("wallet")
+                            onClose()
+                          }}
+                          className="underline text-blue-500"
+                          href="/user-dashboard?wallet">here</Link></div>
+                        </>
+                      }
                     </div>
                   </CardContent>
                 </Card>
@@ -361,7 +391,7 @@ export function BookingFlow({ service, isOpen, onClose, onBookingComplete, fetch
                     Back
                   </Button>
                   <Button onClick={() => {
-                    handlePayment(handlePayOS)
+                    handlePayOS()
                   }} disabled={isProcessing}>
                     {isProcessing ? "Processing..." : `Pay $${service.discountPrice}`}
                   </Button>

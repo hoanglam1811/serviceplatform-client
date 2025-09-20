@@ -24,6 +24,7 @@ import { Label } from "../ui/label"
 import { TransactionDTO } from "@/types/transaction"
 import { createTransaction, getTransactionsByUserId } from "@/services/transactionService"
 import { getPointsByUserId } from "@/services/loyaltyPointService"
+import { useSearchParams } from "next/navigation"
 
 export function CustomerDashboard() {
   const { user } = useAuth()
@@ -46,6 +47,10 @@ export function CustomerDashboard() {
   const [loadingTx, setLoadingTx] = useState(false)
   const [points, setPoints] = useState<number | null>(null)
   const [loadingPoints, setLoadingPoints] = useState(false)
+  const [tabData, setTabData] = useState<string>("browse")
+
+  const searchParams = useSearchParams();
+  const isWallet = searchParams.get("wallet");
 
   const handleBookService = (service: Service) => {
     setSelectedService(service)
@@ -247,6 +252,12 @@ export function CustomerDashboard() {
     }
   }, [openReview])
 
+  useEffect(() => {
+    if (isWallet != null) {
+      setTabData("wallet")
+    }
+  }, [isWallet])
+
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -292,7 +303,7 @@ export function CustomerDashboard() {
       </div>
 
       {/* Main Content */}
-      <Tabs defaultValue="browse" className="space-y-4">
+      <Tabs value={tabData} onValueChange={(value) => setTabData(value)} className="space-y-4">
         <TabsList>
           <TabsTrigger value="browse">Browse Services</TabsTrigger>
           <TabsTrigger value="bookings">My Bookings</TabsTrigger>
@@ -743,12 +754,14 @@ export function CustomerDashboard() {
         <BookingFlow
           service={selectedService}
           isOpen={showBookingFlow}
-          handlePayment={handlePayment}
+          wallet={wallet}
           onClose={() => {
             setShowBookingFlow(false)
             setSelectedService(null)
           }}
+          fetchWallet={fetchWallet}
           fetchData={fetchData}
+          setTabData={setTabData}
           onBookingComplete={handleBookingComplete}
         />
       )}
