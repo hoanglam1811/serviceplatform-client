@@ -2,15 +2,27 @@
 
 import { ServiceBrowser } from "@/components/customer/service-browser"
 import { BookingFlow } from "@/components/booking/booking-flow"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import type { Service } from "@/types/service"
 import { Navbar } from "@/components/navigation/navbar"
+import { getWalletByUserId } from "@/services/walletService"
+import { useAuth } from "@/contexts/auth-context"
+import { notification } from "antd"
 
 export default function ServicesPage() {
   const [selectedService, setSelectedService] = useState<Service | null>(null)
   const [showBookingFlow, setShowBookingFlow] = useState(false)
+  const [wallet, setWallet] = useState<any>(null)
+  const { user } = useAuth();
 
   const handleBookService = (service: Service) => {
+    if(!user) {
+      notification.error({
+        message: "Không thể thực hiện",
+        description: "Vui lòng đăng nhập trước khi đặt dịch vụ",
+      })
+      return
+    }
     setSelectedService(service)
     setShowBookingFlow(true)
   }
@@ -18,6 +30,24 @@ export default function ServicesPage() {
   const handleBookingComplete = (bookingId: string) => {
     console.log("Booking completed:", bookingId)
   }
+
+  const fetchWallet = async () => {
+    try{
+      if(!user) return;
+      const res = await getWalletByUserId(user?.id);
+      setWallet(res.data)
+    }
+    catch(err){
+
+    }
+    finally{
+
+    }
+  }
+
+  useEffect(() => {
+    fetchWallet()
+  }, [])
 
   return (
     <>
@@ -44,6 +74,10 @@ export default function ServicesPage() {
               setShowBookingFlow(false)
               setSelectedService(null)
             }}
+            wallet={wallet}
+            fetchData={async () => {}}
+            setTabData={() => {}}
+            fetchWallet={fetchWallet}
             onBookingComplete={handleBookingComplete}
           />
         )}

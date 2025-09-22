@@ -282,8 +282,8 @@ function ServiceBrowseCard({ service, categories, onViewDetails, onBook }: Servi
             <span>{service.duration} minutes</span>
           </div>
           <div className="flex items-center gap-1 font-semibold text-green-600">
-            <DollarSign className="h-4 w-4" />
-            <span>{service.discountPrice}</span>
+            <span>{service.discountPrice.toLocaleString("en-US")}</span>
+            <span className="h-4 w-4">₫</span>
           </div>
         </div>
 

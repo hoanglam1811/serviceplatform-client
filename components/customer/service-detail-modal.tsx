@@ -138,10 +138,10 @@ export function ServiceDetailModal({ service, onClose, onBook }: ServiceDetailMo
             <div className=" bg-white rounded-3xl border border-gray-100 shadow-xl p-8 space-y-6">
               <div className="text-center space-y-2">
                 <div className="text-4xl font-extrabold text-blue-500">
-                  ${service.discountPrice}
+                  {service.discountPrice.toLocaleString()} ₫
                 </div>
                 <div className="text-sm text-gray-500 line-through">
-                  ${service.originalPrice}
+                  {service?.originalPrice ? service.originalPrice.toLocaleString() + " ₫" : ""}
                 </div>
                 <span className="inline-block bg-green-100 text-green-700 text-xs font-semibold px-2 py-1 rounded-full">
                   Save 30%
@@ -150,7 +150,7 @@ export function ServiceDetailModal({ service, onClose, onBook }: ServiceDetailMo
                   <Clock className="h-4 w-4" /> {service.duration} minutes
                 </p>
               </div>
-              <Button className="w-full bg-gradient-to-r bg-blue-500 text-white py-3 rounded-xl font-semibold text-lg shadow-md hover:scale-105 transition-transform">
+              <Button onClick={onBook} className="w-full bg-gradient-to-r bg-blue-500 text-white py-3 rounded-xl font-semibold text-lg shadow-md hover:scale-105 transition-transform">
                 <Calendar className="h-5 w-5 mr-2" />
                 Book Now
               </Button>

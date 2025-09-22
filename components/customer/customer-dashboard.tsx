@@ -50,9 +50,16 @@ export function CustomerDashboard() {
   const [tabData, setTabData] = useState<string>("browse")
 
   const searchParams = useSearchParams();
-  const isWallet = searchParams.get("wallet");
+  const tabName = searchParams.get("tab");
 
   const handleBookService = (service: Service) => {
+    if(!user) {
+      notification.error({
+        message: "Không thể thực hiện",
+        description: "Vui lòng đăng nhập trước khi đặt dịch vụ",
+      })
+      return
+    }
     setSelectedService(service)
     setShowBookingFlow(true)
   }
@@ -253,10 +260,10 @@ export function CustomerDashboard() {
   }, [openReview])
 
   useEffect(() => {
-    if (isWallet != null) {
-      setTabData("wallet")
+    if (tabName != null) {
+      setTabData(tabName)
     }
-  }, [isWallet])
+  }, [tabName])
 
   return (
     <div className="space-y-6">

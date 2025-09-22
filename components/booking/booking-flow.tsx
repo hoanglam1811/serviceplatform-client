@@ -223,7 +223,7 @@ export function BookingFlow({ service, isOpen, onClose, onBookingComplete, fetch
                     <p className="text-sm text-gray-600">Duration: {service.duration} minutes</p>
                   </div>
                   <div className="text-right">
-                    <div className="text-2xl font-bold text-green-600">${service.discountPrice}</div>
+                    <div className="text-2xl font-bold text-green-600">{service.discountPrice.toLocaleString()} ₫</div>
                   </div>
                 </div>
               </CardContent>
@@ -350,7 +350,7 @@ export function BookingFlow({ service, isOpen, onClose, onBookingComplete, fetch
                     <div className="flex justify-between font-semibold text-lg">
                       <span>Total:</span>
                       <span className="text-green-600">
-                        ${(service.discountPrice - pointsToUse).toLocaleString()}
+                        {(service.discountPrice - pointsToUse).toLocaleString()} ₫
                       </span>
                     </div>
                   </CardContent>
@@ -379,7 +379,7 @@ export function BookingFlow({ service, isOpen, onClose, onBookingComplete, fetch
                             onClose()
                           }}
                           className="underline text-blue-500"
-                          href="/user-dashboard?wallet">here</Link></div>
+                          href="/user-dashboard?tab=wallet">here</Link></div>
                         </>
                       }
                     </div>
@@ -393,7 +393,7 @@ export function BookingFlow({ service, isOpen, onClose, onBookingComplete, fetch
                   <Button onClick={() => {
                     handlePayOS()
                   }} disabled={isProcessing}>
-                    {isProcessing ? "Processing..." : `Pay $${service.discountPrice}`}
+                    {isProcessing ? "Processing..." : `Pay ${service.discountPrice.toLocaleString()} ₫`}
                   </Button>
                 </div>
               </div>
