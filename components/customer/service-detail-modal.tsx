@@ -7,6 +7,7 @@ import { Star, Clock, User, Calendar, Check } from "lucide-react"
 import type { Service, ServiceDTO } from "@/types/service"
 import { serviceCategories } from "@/types/service"
 import CarouselWithThumbs from "../customized/carousel/carousel-09"
+import Link from "next/link"
 
 interface ServiceDetailModalProps {
   service: Service
@@ -140,12 +141,16 @@ export function ServiceDetailModal({ service, onClose, onBook }: ServiceDetailMo
                 <div className="text-4xl font-extrabold text-blue-500">
                   {service.discountPrice.toLocaleString()} ₫
                 </div>
+
                 <div className="text-sm text-gray-500 line-through">
                   {service?.originalPrice ? service.originalPrice.toLocaleString() + " ₫" : ""}
                 </div>
-                <span className="inline-block bg-green-100 text-green-700 text-xs font-semibold px-2 py-1 rounded-full">
-                  Save 30%
-                </span>
+
+                {service?.originalPrice && service?.discountPrice && service.originalPrice > service.discountPrice && (
+                  <span className="inline-block bg-green-100 text-green-700 text-xs font-semibold px-2 py-1 rounded-full">
+                    Save {Math.round(((service.originalPrice - service.discountPrice) / service.originalPrice) * 100)}%
+                  </span>
+                )}
                 <p className="text-sm text-gray-500 flex items-center justify-center gap-1 mt-2">
                   <Clock className="h-4 w-4" /> {service.duration} minutes
                 </p>
@@ -154,9 +159,15 @@ export function ServiceDetailModal({ service, onClose, onBook }: ServiceDetailMo
                 <Calendar className="h-5 w-5 mr-2" />
                 Book Now
               </Button>
-              <Button variant="outline" className="w-full border-indigo-200 text-blue-500 rounded-xl">
-                <User className="h-5 w-5 mr-2" />
-                Contact Provider
+              <Button
+                asChild
+                variant="outline"
+                className="w-full border-indigo-200 text-blue-500 rounded-xl"
+              >
+                <Link href={`/provider/${service.userId}`}>
+                  <User className="h-5 w-5 mr-2" />
+                  Contact Provider
+                </Link>
               </Button>
               <div className="flex items-center justify-center gap-3 text-xs text-gray-400 pt-2">
                 <span>🔒 Secure Payment</span>

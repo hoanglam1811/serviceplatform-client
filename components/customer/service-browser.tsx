@@ -240,7 +240,7 @@ interface ServiceBrowseCardProps {
   onBook: () => void
 }
 
-function ServiceBrowseCard({ service, categories, onViewDetails, onBook }: ServiceBrowseCardProps) {
+export function ServiceBrowseCard({ service, categories, onViewDetails, onBook }: ServiceBrowseCardProps) {
   const category = categories.find((cat) => cat.id === service.category.id)
 
   return (
