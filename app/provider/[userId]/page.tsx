@@ -11,6 +11,7 @@ import { ServiceCard } from "@/components/provider/service-card"
 import { Service, ServiceCategory } from "@/types/service"
 import { ServiceBrowseCard } from "@/components/customer/service-browser"
 import { getAllCategories } from "@/services/serviceCategoryService"
+import { ServiceDetailModal } from "@/components/customer/service-detail-modal"
 
 export default function ProviderDetail() {
     const params = useParams()
@@ -22,6 +23,7 @@ export default function ProviderDetail() {
     const [currentPage, setCurrentPage] = useState(1)
     const [selectedService, setSelectedService] = useState<Service | null>(null)
     const [categories, setCategories] = useState<ServiceCategory[]>([])
+    const [bookingService, setBookingService] = useState<Service | null>(null);
 
     const itemsPerPage = 6
 
@@ -52,7 +54,6 @@ export default function ProviderDetail() {
         return <div className="p-10 text-gray-500">Loading provider info...</div>
     }
 
-    // Avatar fallback theo gender
     const avatarUrl = user?.avatarUrl
         ? user.avatarUrl
         : user?.gender === "Male"
@@ -61,7 +62,6 @@ export default function ProviderDetail() {
                 ? "https://img.icons8.com/?size=100&id=6GNNJRTADGtC&format=png&color=000000"
                 : "/default-avatar.png"
 
-    // Pagination
     const totalPages = Math.ceil((services?.length || 0) / itemsPerPage)
     const paginatedServices = Array.isArray(services)
         ? services.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
@@ -70,13 +70,13 @@ export default function ProviderDetail() {
     return (
         <div className="max-w-6xl mx-auto py-12 px-6 space-y-12">
             {/* Header */}
-            <div className="flex items-center gap-8 bg-white rounded-3xl p-8 shadow-sm border border-gray-100">
+            <div className="flex flex-col md:flex-row items-center md:items-start gap-6 bg-white rounded-3xl p-8 shadow-sm border border-gray-100">
                 <img
                     src={avatarUrl}
                     alt="avatar"
-                    className="w-32 h-32 rounded-2xl border border-gray-200 object-cover shadow-sm"
+                    className="w-28 h-28 rounded-2xl border border-gray-200 object-cover shadow-sm"
                 />
-                <div className="space-y-2">
+                <div className="space-y-3 text-center md:text-left">
                     <h1 className="text-3xl font-bold text-gray-900">{user?.fullName}</h1>
                     <p className="text-gray-500">@{user?.username}</p>
                     <span
@@ -93,9 +93,9 @@ export default function ProviderDetail() {
             {/* Info sections */}
             <div className="space-y-10">
                 <Section title="Thông tin cá nhân" icon={<User className="w-5 h-5 text-gray-600" />}>
-                    <InfoItem icon={<Mail className="w-4 h-4 text-gray-500" />} label="Email" value={user?.email} />
-                    <InfoItem icon={<Phone className="w-4 h-4 text-gray-500" />} label="Số điện thoại" value={user?.phoneNumber} />
-                    <InfoItem icon={<MapPin className="w-4 h-4 text-gray-500" />} label="Địa chỉ" value={user?.address || "Chưa có"} />
+                    <InfoItem icon={<Mail className="w-4 h-4 text-gray-400" />} label="Email" value={user?.email} />
+                    <InfoItem icon={<Phone className="w-4 h-4 text-gray-400" />} label="Số điện thoại" value={user?.phoneNumber} />
+                    <InfoItem icon={<MapPin className="w-4 h-4 text-gray-400" />} label="Địa chỉ" value={user?.address || "Chưa có"} />
                     <InfoItem
                         label="Giới tính"
                         value={
@@ -110,7 +110,7 @@ export default function ProviderDetail() {
                     />
                     {user?.bio && (
                         <div className="md:col-span-2">
-                            <InfoItem icon={<FileText className="w-4 h-4 text-gray-500" />} label="Bio" value={user?.bio} />
+                            <InfoItem icon={<FileText className="w-4 h-4 text-gray-400" />} label="Bio" value={user?.bio} />
                         </div>
                     )}
                 </Section>
@@ -122,27 +122,25 @@ export default function ProviderDetail() {
                     <InfoItem label="Mã số thuế" value={provider.taxCode} />
                     <InfoItem label="Điện thoại DN" value={provider.businessPhone || "—"} />
                 </Section>
-
-
             </div>
+
             {/* Services */}
             <Section title="Dịch vụ cung cấp">
                 {services.length === 0 ? (
                     <p className="text-gray-500">Chưa có dịch vụ nào</p>
                 ) : (
                     <>
-                        <div className="grid sm:grid-cols-2 lg:grid-cols-1 gap-3">
+                        <div className="grid sm:grid-cols-2 lg:grid-cols-1 gap-4">
                             {paginatedServices.map((service) => (
                                 <ServiceBrowseCard
                                     key={service.id}
                                     service={service}
-                                    categories={categories} // truyền categories từ props hoặc state
+                                    categories={categories}
                                     onViewDetails={() => {
-                                        setSelectedService(service)
+                                        setSelectedService(service);
                                     }}
                                     onBook={() => {
-                                        console.log("📌 Booking:", service.name)
-                                        // TODO: mở modal booking hoặc gọi API đặt dịch vụ
+                                        console.log("📌 Booking:", service.name);
                                     }}
                                 />
                             ))}
@@ -176,8 +174,18 @@ export default function ProviderDetail() {
                 )}
             </Section>
 
+            {selectedService && (
+                <ServiceDetailModal
+                    service={selectedService}
+                    currentUserId={userId}
+                    onClose={() => setSelectedService(null)}
+                    onBook={() => {
+                        console.log("📌 Booking:", selectedService.name);
+                        setSelectedService(null);
+                    }}
+                />
+            )}
         </div>
-
     )
 }
 
@@ -193,11 +201,12 @@ function Section({
     return (
         <div className="p-8 bg-white rounded-2xl shadow-sm border border-gray-100 space-y-6">
             <h2 className="flex items-center gap-2 text-lg font-semibold text-gray-900 tracking-tight">
-                {icon} {title}
+                {icon && <span className="text-gray-600">{icon}</span>}
+                {title}
             </h2>
-            <div className="grid md:grid-cols-2 gap-6">{children}</div>
+            <div className="grid md:grid-cols-2 gap-x-8 gap-y-6">{children}</div>
         </div>
-    )
+    );
 }
 
 function InfoItem({
@@ -212,9 +221,10 @@ function InfoItem({
     return (
         <div className="space-y-1">
             <p className="flex items-center gap-2 text-xs font-semibold uppercase text-gray-500 tracking-wide">
-                {icon} {label}
+                {icon && <span>{icon}</span>}
+                {label}
             </p>
             <p className="text-base font-medium text-gray-900">{value}</p>
         </div>
-    )
+    );
 }
