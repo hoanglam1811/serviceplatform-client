@@ -11,6 +11,10 @@ import { Send, Search, MoreVertical, ArrowLeft } from "lucide-react"
 import { useAuth } from "@/contexts/auth-context"
 import type { Message, ChatUser } from "@/types/chat"
 import Link from "next/link"
+import {
+  HubConnection,
+  HubConnectionBuilder,
+} from "@microsoft/signalr";
 
 // Mock data for demonstration
 const mockUsers: ChatUser[] = [
@@ -20,40 +24,14 @@ const mockUsers: ChatUser[] = [
   { id: "4", name: "Sarah Client", role: "customer", isOnline: true },
 ]
 
-const mockMessages: Message[] = [
-  {
-    id: "1",
-    senderId: "2",
-    receiverId: "1",
-    content: "Hi! I'm interested in your web development service.",
-    timestamp: new Date(Date.now() - 3600000),
-    isRead: true,
-  },
-  {
-    id: "2",
-    senderId: "1",
-    receiverId: "2",
-    content: "Hello! I'd be happy to help. What kind of website are you looking to build?",
-    timestamp: new Date(Date.now() - 3000000),
-    isRead: true,
-  },
-  {
-    id: "3",
-    senderId: "2",
-    receiverId: "1",
-    content: "I need an e-commerce site for my small business. Can you provide a quote?",
-    timestamp: new Date(Date.now() - 1800000),
-    isRead: false,
-  },
-]
-
 export function ChatInterface() {
   const { user } = useAuth()
   const [selectedConversation, setSelectedConversation] = useState<string | null>(null)
-  const [messages, setMessages] = useState<Message[]>(mockMessages)
+  const [messages, setMessages] = useState<Message[]>([])
   const [newMessage, setNewMessage] = useState("")
   const [searchTerm, setSearchTerm] = useState("")
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const [connection, setConnection] = useState<HubConnection | null>(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
@@ -74,7 +52,7 @@ export function ChatInterface() {
           (m) =>
             (m.senderId === user?.id && m.receiverId === u.id) || (m.senderId === u.id && m.receiverId === user?.id),
         )
-        .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())[0],
+        .sort((a, b) => b?.createdAt?.getTime() - a?.createdAt?.getTime())[0],
     }))
     .filter((c) => searchTerm === "" || c.user.name.toLowerCase().includes(searchTerm.toLowerCase()))
 
@@ -86,7 +64,7 @@ export function ChatInterface() {
         ((m.senderId === user?.id && m.receiverId === selectedConversation) ||
           (m.senderId === selectedConversation && m.receiverId === user?.id)),
     )
-    .sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime())
+    .sort((a, b) => a?.createdAt?.getTime() - b?.createdAt?.getTime())
 
   const handleSendMessage = () => {
     if (!newMessage.trim() || !selectedConversation || !user) return
@@ -95,9 +73,9 @@ export function ChatInterface() {
       id: Date.now().toString(),
       senderId: user.id,
       receiverId: selectedConversation,
-      content: newMessage.trim(),
-      timestamp: new Date(),
-      isRead: false,
+      message: newMessage.trim(),
+      createdAt: new Date(),
+      status: "sent",
     }
 
     setMessages((prev) => [...prev, message])
@@ -110,6 +88,38 @@ export function ChatInterface() {
       handleSendMessage()
     }
   }
+
+  useEffect(() => {
+    const connect = new HubConnectionBuilder()
+    .withUrl("http://localhost:5210/chathub", {
+      withCredentials: true
+    })
+    .withAutomaticReconnect()
+    .build();
+
+    connect.on("ReceiveMessage", (sender: string, message: string) => {
+      /*setMessages(prev => [...prev, { 
+        id: Date.now().toString(),
+        senderId: sender,
+        receiverId: selectedConversation,
+        message: message,
+        createdAt: new Date(),
+        status: "sent"
+      }]);*/
+    });
+
+    connect
+      .start()
+      .then(() => {
+        console.log("Connected to SignalR hub");
+        setConnection(connect);
+      })
+      .catch(err => console.error("SignalR Connection Error: ", err));
+
+    return () => {
+      connect.stop();
+    };
+  }, []);
 
   return (
     <div className="flex h-[calc(100vh-4rem)] bg-background">
@@ -166,7 +176,7 @@ export function ChatInterface() {
                     </Badge>
                   </div>
                   {conversation.lastMessage && (
-                    <p className="text-sm text-muted-foreground truncate mt-1">{conversation.lastMessage.content}</p>
+                    <p className="text-sm text-muted-foreground truncate mt-1">{conversation.lastMessage.message}</p>
                   )}
                 </div>
               </div>
@@ -221,13 +231,13 @@ export function ChatInterface() {
                       message.senderId === user?.id ? "bg-primary text-primary-foreground" : "bg-muted"
                     }`}
                   >
-                    <p className="text-sm">{message.content}</p>
+                    <p className="text-sm">{message.message}</p>
                     <p
                       className={`text-xs mt-1 ${
                         message.senderId === user?.id ? "text-primary-foreground/70" : "text-muted-foreground"
                       }`}
                     >
-                      {message.timestamp.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                      {message.createdAt.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                     </p>
                   </div>
                 </div>

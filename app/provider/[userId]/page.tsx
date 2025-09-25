@@ -12,6 +12,8 @@ import { Service, ServiceCategory } from "@/types/service"
 import { ServiceBrowseCard } from "@/components/customer/service-browser"
 import { getAllCategories } from "@/services/serviceCategoryService"
 import { ServiceDetailModal } from "@/components/customer/service-detail-modal"
+import { BookingFlow } from "@/components/booking/booking-flow"
+import { getWalletByUserId } from "@/services/walletService"
 
 export default function ProviderDetail() {
     const params = useParams()
@@ -24,8 +26,24 @@ export default function ProviderDetail() {
     const [selectedService, setSelectedService] = useState<Service | null>(null)
     const [categories, setCategories] = useState<ServiceCategory[]>([])
     const [bookingService, setBookingService] = useState<Service | null>(null);
+    const [showBookingFlow, setShowBookingFlow] = useState(false);
+    const [wallet, setWallet] = useState<any>(null)
 
     const itemsPerPage = 6
+
+    const fetchWallet = async () => {
+      try{
+        if(!user) return;
+        const res = await getWalletByUserId(user?.id);
+        setWallet(res.data)
+      }
+      catch(err){
+
+      }
+      finally{
+
+      }
+    }
 
     useEffect(() => {
         const fetchData = async () => {
@@ -50,6 +68,11 @@ export default function ProviderDetail() {
         fetchData()
     }, [userId])
 
+    useEffect(() => {
+      fetchWallet()
+    }, [])
+
+
     if (!provider || !user) {
         return <div className="p-10 text-gray-500">Loading provider info...</div>
     }
@@ -67,6 +90,9 @@ export default function ProviderDetail() {
         ? services.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
         : []
 
+    
+
+    
     return (
         <div className="max-w-6xl mx-auto py-12 px-6 space-y-12">
             {/* Header */}
@@ -140,7 +166,8 @@ export default function ProviderDetail() {
                                         setSelectedService(service);
                                     }}
                                     onBook={() => {
-                                        console.log("📌 Booking:", service.name);
+                                      setShowBookingFlow(true)
+                                      setSelectedService(service)
                                     }}
                                 />
                             ))}
@@ -160,8 +187,8 @@ export default function ProviderDetail() {
                                 <span className="text-sm text-gray-600">
                                     Trang {currentPage}/{totalPages}
                                 </span>
-                                <Button
-                                    variant="outline"
+                  <Button
+                    variant="outline"
                                     size="sm"
                                     disabled={currentPage === totalPages}
                                     onClick={() => setCurrentPage((p) => p + 1)}
@@ -180,10 +207,24 @@ export default function ProviderDetail() {
                     currentUserId={userId}
                     onClose={() => setSelectedService(null)}
                     onBook={() => {
-                        console.log("📌 Booking:", selectedService.name);
-                        setSelectedService(null);
+                      setShowBookingFlow(true)
                     }}
                 />
+            )}
+
+            {selectedService && (
+              <BookingFlow
+                service={selectedService}
+                isOpen={showBookingFlow}
+                onClose={() => {
+                  setShowBookingFlow(false)
+                }}
+                wallet={wallet}
+                fetchData={async () => {}}
+                setTabData={() => {}}
+                fetchWallet={fetchWallet}
+                onBookingComplete={() => {}}
+              />
             )}
         </div>
     )

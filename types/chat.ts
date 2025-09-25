@@ -2,9 +2,9 @@ export interface Message {
   id: string
   senderId: string
   receiverId: string
-  content: string
-  timestamp: Date
-  isRead: boolean
+  message: string
+  createdAt: Date
+  status: string
 }
 
 export interface ChatConversation {
