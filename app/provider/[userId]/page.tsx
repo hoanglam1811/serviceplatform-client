@@ -24,10 +24,12 @@ export default function ProviderDetail() {
     const [services, setServices] = useState<any[]>([])
     const [currentPage, setCurrentPage] = useState(1)
     const [selectedService, setSelectedService] = useState<Service | null>(null)
+    const [selectedServiceBooking, setSelectedServiceBooking] = useState<Service | null>(null)
     const [categories, setCategories] = useState<ServiceCategory[]>([])
     const [bookingService, setBookingService] = useState<Service | null>(null);
     const [showBookingFlow, setShowBookingFlow] = useState(false);
     const [wallet, setWallet] = useState<any>(null)
+
 
     const itemsPerPage = 6
 
@@ -167,7 +169,7 @@ export default function ProviderDetail() {
                                     }}
                                     onBook={() => {
                                       setShowBookingFlow(true)
-                                      setSelectedService(service)
+                                      setSelectedServiceBooking(service)
                                     }}
                                 />
                             ))}
@@ -212,9 +214,9 @@ export default function ProviderDetail() {
                 />
             )}
 
-            {selectedService && (
+            {selectedServiceBooking && (
               <BookingFlow
-                service={selectedService}
+                service={selectedServiceBooking}
                 isOpen={showBookingFlow}
                 onClose={() => {
                   setShowBookingFlow(false)
