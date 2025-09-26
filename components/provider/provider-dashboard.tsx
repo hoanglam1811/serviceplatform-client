@@ -246,7 +246,18 @@ export function ProviderDashboard() {
         <TabsContent value="services" className="space-y-4">
           <div className="flex justify-between items-center">
             <h3 className="text-lg font-semibold">Your Services</h3>
-            <Button onClick={() => setShowServiceForm(true)}>
+            <Button
+              onClick={() => {
+                if (!wallet) {
+                  notification.error({
+                    message: "No Wallet Found",
+                    description: "You need to create a wallet before adding a service.",
+                  })
+                  return
+                }
+                setShowServiceForm(true)
+              }}
+            >
               <Plus className="h-4 w-4 mr-2" />
               Add Service
             </Button>
@@ -260,7 +271,18 @@ export function ProviderDashboard() {
                   <p className="text-gray-600 mb-4">
                     Create your first service to start earning!
                   </p>
-                  <Button onClick={() => setShowServiceForm(true)}>
+                  <Button
+                    onClick={() => {
+                      if (!wallet) {
+                        notification.error({
+                          message: "No Wallet Found",
+                          description: "Please create a wallet before adding your first service.",
+                        })
+                        return
+                      }
+                      setShowServiceForm(true)
+                    }}
+                  >
                     <Plus className="h-4 w-4 mr-2" />
                     Create Your First Service
                   </Button>
