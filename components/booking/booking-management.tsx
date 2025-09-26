@@ -28,15 +28,15 @@ export function BookingManagement({ userRole }: BookingManagementProps) {
   const { user } = useAuth()
 
   const handleAcceptBooking = (bookingId: string) => {
-    console.log("Accepting booking:", bookingId)
+    fetchData()
   }
 
   const handleDeclineBooking = (bookingId: string) => {
-    console.log("Declining booking:", bookingId)
+    fetchData()
   }
 
   const handleCompleteBooking = (bookingId: string) => {
-    console.log("Completing booking:", bookingId)
+    fetchData()
   }
 
   const getStatusColor = (status: string) => {
@@ -178,11 +178,21 @@ interface BookingCardProps {
 function BookingCard({ booking, userRole, onViewDetails, onAccept, onDecline, onComplete }: BookingCardProps) {
   const { user } = useAuth()
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false)
+  const [isCompleteModalOpen, setIsCompleteModalOpen] = useState(false)
   const [isDeclineModalOpen, setIsDeclineModalOpen] = useState(false)
   const [declineReason, setDeclineReason] = useState("")
   const [currentBooking, setCurrentBooking] = useState(booking)
   const [agreeConfirmTerms, setAgreeConfirmTerms] = useState(false)
   const [agreeDeclineTerms, setAgreeDeclineTerms] = useState(false)
+  const [preview, setPreview] = useState<string | null>(null);
+  const [error, setError] = useState(false)
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setPreview(URL.createObjectURL(file));
+    }
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -210,10 +220,33 @@ function BookingCard({ booking, userRole, onViewDetails, onAccept, onDecline, on
         description: "You have successfully confirmed this booking.",
       })
       setIsConfirmModalOpen(false)
+      onAccept?.()
     } catch (error) {
       notification.error({
         message: "Error",
         description: "Failed to confirm booking.",
+      })
+    }
+  }
+
+  const handleComplete = async () => {
+    try {
+      if(!preview){
+        setError(true)
+        return
+      }
+      await updateBookingStatus(currentBooking.id, "completed")
+      setCurrentBooking({ ...currentBooking, status: "completed" }) // cập nhật tại chỗ
+      notification.success({
+        message: "Booking Completed",
+        description: "You have successfully completed this booking.",
+      })
+      setIsCompleteModalOpen(false)
+      onComplete?.()
+    } catch (error) {
+      notification.error({
+        message: "Error",
+        description: "Failed to complete booking.",
       })
     }
   }
@@ -229,6 +262,7 @@ function BookingCard({ booking, userRole, onViewDetails, onAccept, onDecline, on
       })
       setIsDeclineModalOpen(false)
       setDeclineReason("")
+      onDecline?.()
     } catch (error) {
       notification.error({
         message: "Error",
@@ -298,12 +332,12 @@ function BookingCard({ booking, userRole, onViewDetails, onAccept, onDecline, on
           <div>
             <p className="text-xs text-gray-500 mb-0.5">Payment</p>
             <p
-              className={`font-medium ${booking.paymentStatus === "Paid"
+              className={`font-medium ${booking.status === "Paid"
                 ? "text-green-600"
                 : "text-amber-600"
                 }`}
             >
-              {booking.paymentStatus}
+              {booking.status}
             </p>
           </div>
         </div>
@@ -355,7 +389,7 @@ function BookingCard({ booking, userRole, onViewDetails, onAccept, onDecline, on
               <Button
                 size="sm"
                 className="rounded-lg bg-blue-600 hover:bg-blue-700 text-white shadow-sm"
-                onClick={onComplete}
+                onClick={() => setIsCompleteModalOpen(true)}
               >
                 <CheckCircle className="h-4 w-4 mr-2" />
                 Mark Complete
@@ -448,6 +482,62 @@ function BookingCard({ booking, userRole, onViewDetails, onAccept, onDecline, on
                 disabled={!agreeDeclineTerms}
               >
                 Decline
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        <Dialog open={isCompleteModalOpen} onOpenChange={setIsCompleteModalOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Complete Booking</DialogTitle>
+              <DialogDescription>
+                Vui lòng đọc kỹ điều khoản trước khi xác nhận:
+                <ul className="list-disc ml-5 mt-2 text-sm text-gray-600 space-y-1">
+                  <li>Việc xác nhận đồng nghĩa bạn cam kết cung cấp dịch vụ đúng thời gian đã đặt.</li>
+                  <li>Hủy sau khi đã xác nhận có thể ảnh hưởng đến uy tín và bị phạt.</li>
+                  <li>Khách hàng có quyền đánh giá chất lượng dịch vụ sau khi hoàn tất.</li>
+                </ul>
+              </DialogDescription>
+            </DialogHeader>
+
+            {/* Checkbox đồng ý */}
+            <Input type="file" accept="image/*" onChange={handleFileChange} />
+            {preview && (
+              <div className="w-2/3 mx-auto">
+                <img
+                  src={preview}
+                  alt="Preview"
+                  className="object-cover rounded-xl"
+                />
+              </div>
+            )}
+            {error && <p className="text-red-500">You need to upload image</p>}
+            <div className="flex items-center gap-2 mt-4">
+              <input
+                type="checkbox"
+                id="confirmTerms"
+                checked={agreeConfirmTerms}
+                onChange={(e) => setAgreeConfirmTerms(e.target.checked)}
+                className="h-4 w-4"
+              />
+              <label htmlFor="confirmTerms" className="text-sm text-gray-700">
+                Tôi đồng ý với các điều khoản & nội quy
+              </label>
+            </div>
+
+            <DialogFooter>
+              <Button variant="ghost" onClick={() => {
+                setIsCompleteModalOpen(false)
+                setPreview(null);
+              }}>
+                Cancel
+              </Button>
+              <Button
+                onClick={handleComplete}
+                disabled={!agreeConfirmTerms}
+              >
+                Confirm
               </Button>
             </DialogFooter>
           </DialogContent>

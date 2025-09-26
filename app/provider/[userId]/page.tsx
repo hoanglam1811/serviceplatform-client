@@ -14,6 +14,7 @@ import { getAllCategories } from "@/services/serviceCategoryService"
 import { ServiceDetailModal } from "@/components/customer/service-detail-modal"
 import { BookingFlow } from "@/components/booking/booking-flow"
 import { getWalletByUserId } from "@/services/walletService"
+import { useAuth } from "@/contexts/auth-context"
 
 export default function ProviderDetail() {
     const params = useParams()
@@ -29,14 +30,15 @@ export default function ProviderDetail() {
     const [bookingService, setBookingService] = useState<Service | null>(null);
     const [showBookingFlow, setShowBookingFlow] = useState(false);
     const [wallet, setWallet] = useState<any>(null)
+    const { user: myUser } = useAuth();
 
 
     const itemsPerPage = 6
 
     const fetchWallet = async () => {
       try{
-        if(!user) return;
-        const res = await getWalletByUserId(user?.id);
+        if(!myUser) return;
+        const res = await getWalletByUserId(myUser?.id);
         setWallet(res.data)
       }
       catch(err){
@@ -91,9 +93,6 @@ export default function ProviderDetail() {
     const paginatedServices = Array.isArray(services)
         ? services.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
         : []
-
-    
-
     
     return (
         <div className="max-w-6xl mx-auto py-12 px-6 space-y-12">
@@ -210,6 +209,7 @@ export default function ProviderDetail() {
                     onClose={() => setSelectedService(null)}
                     onBook={() => {
                       setShowBookingFlow(true)
+                      setSelectedServiceBooking(selectedService)
                     }}
                 />
             )}
