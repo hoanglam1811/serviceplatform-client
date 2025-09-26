@@ -2,14 +2,13 @@
 
 import type React from "react"
 
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
 import { X, Loader2 } from "lucide-react"
 import type { Service, ServiceCategory } from "@/types/service"
 import { getAllCategories } from "@/services/serviceCategoryService"
@@ -37,27 +36,7 @@ export function ServiceForm({ service, onSave, onCancel }: ServiceFormProps) {
     status: service?.status || "Active",
     images: [] as File[],
     categoryId: service?.categoryId || "",
-    tags: service?.tags || [],
   })
-
-  const [newTag, setNewTag] = useState("")
-
-  const handleAddTag = () => {
-    if (newTag.trim() && !formData.tags.includes(newTag.trim())) {
-      setFormData({
-        ...formData,
-        tags: [...formData.tags, newTag.trim()],
-      })
-      setNewTag("")
-    }
-  }
-
-  const handleRemoveTag = (tagToRemove: string) => {
-    setFormData({
-      ...formData,
-      tags: formData.tags.filter((tag) => tag !== tagToRemove),
-    })
-  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -272,7 +251,7 @@ export function ServiceForm({ service, onSave, onCancel }: ServiceFormProps) {
 
               {/* Preview */}
               <div className="mt-2 grid grid-cols-3 gap-2">
-                {formData.images.length == 0 && 
+                {formData.images.length == 0 &&
                   service?.imageUrl.split(", ").map((url, idx) => (
                     <img
                       key={idx}
@@ -291,41 +270,6 @@ export function ServiceForm({ service, onSave, onCancel }: ServiceFormProps) {
                   />
                 ))}
               </div>
-            </div>
-
-            {/* Tags */}
-            <div className="space-y-2">
-              <Label className="text-xs font-medium uppercase tracking-wide text-slate-500">Tags</Label>
-              <div className="flex gap-2 mb-2">
-                <Input
-                  value={newTag}
-                  onChange={(e) => setNewTag(e.target.value)}
-                  placeholder="Add a tag..."
-                  onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), handleAddTag())}
-                  className="rounded-xl"
-                />
-                <Button type="button" onClick={handleAddTag} variant="outline" className="rounded-xl">
-                  Add
-                </Button>
-              </div>
-              <motion.div layout className="flex flex-wrap gap-2">
-                {formData.tags.map((tag) => (
-                  <motion.div
-                    key={tag}
-                    initial={{ scale: 0.8, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    exit={{ scale: 0.8, opacity: 0 }}
-                  >
-                    <Badge
-                      variant="secondary"
-                      className="rounded-full px-3 py-1 bg-gradient-to-r from-indigo-100 to-purple-100 text-indigo-700 flex items-center gap-1"
-                    >
-                      {tag}
-                      <X className="h-3 w-3 cursor-pointer" onClick={() => handleRemoveTag(tag)} />
-                    </Badge>
-                  </motion.div>
-                ))}
-              </motion.div>
             </div>
 
             {/* Buttons */}
